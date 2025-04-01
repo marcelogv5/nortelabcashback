@@ -67,35 +67,28 @@
       `;
     }
 
-    function confirmarEntrega() {
-      const payload = {
-        nome: dados.nome || "",
-        req: dados.req || "",
-        itens: dados.itens || "",
-        usado: parseFloat(dados.usado || 0),
-        sobra: parseFloat(dados.sobra || 0)
-      };
+  function confirmarEntrega() {
+  const form = new FormData();
+  form.append("nome", dados.nome || "");
+  form.append("req", dados.req || "");
+  form.append("itens", dados.itens || "");
+  form.append("usado", parseFloat(dados.usado || 0));
+  form.append("sobra", parseFloat(dados.sobra || 0));
 
-      console.log("Enviando dados:", payload);
-
-      fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.text())
-      .then(msg => {
-        document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
-        document.getElementById("confirmar").disabled = true;
-        console.log("Resposta do Google:", msg);
-      })
-      .catch(err => {
-        console.error("Erro ao registrar entrega:", err);
-        document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
-      });
-    }
+  fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+    method: "POST",
+    mode: "no-cors", // ← ESSENCIAL para funcionar no GitHub Pages
+    body: form
+  })
+  .then(() => {
+    document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
+    document.getElementById("confirmar").disabled = true;
+  })
+  .catch(err => {
+    console.error("Erro ao registrar entrega:", err);
+    document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
+  });
+}
   </script>
 </body>
 </html>
