@@ -1,52 +1,101 @@
-<script>
-  let dados = {};
-  try {
-    const paramEncoded = new URLSearchParams(window.location.search).get("d");
-    if (!paramEncoded) throw new Error("Parâmetro 'd' não encontrado na URL");
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Leitura QR Code</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      text-align: center;
+    }
+    button {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="conteudo">
+    <h2>Confirmação de Entrega</h2>
+    <p><strong>Nome:</strong> <span id="nome"></span></p>
+    <p><strong>Requisição:</strong> <span id="req"></span></p>
+    <p><strong>Itens:</strong> <span id="itens"></span></p>
+    <p><strong>Usado:</strong> R$ <span id="usado"></span></p>
+    <p><strong>Sobra:</strong> R$ <span id="sobra"></span></p>
 
-    const params = new URLSearchParams(atob(paramEncoded));
-    for (const [key, value] of params.entries()) {
-      dados[key] = value;
+    <button id="confirmar" onclick="confirmarEntrega()">Confirmar Entrega</button>
+    <p id="resposta" style="margin-top:20px;font-weight:bold;"></p>
+  </div>
+
+  <script>
+    let dados = {};
+    try {
+      const paramEncoded = new URLSearchParams(window.location.search).get("d");
+      if (!paramEncoded) throw new Error("Parâmetro 'd' ausente na URL.");
+
+      const decoded = atob(paramEncoded);
+      const params = new URLSearchParams(decoded);
+
+      for (const [key, value] of params.entries()) {
+        dados[key] = value;
+      }
+
+      document.getElementById("nome").innerText = dados.nome;
+      document.getElementById("req").innerText = dados.req;
+      document.getElementById("itens").innerText = dados.itens;
+      document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
+      document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
+
+    } catch (err) {
+      console.error("Erro ao decodificar QR Code:", err);
+      document.body.innerHTML = `
+        <div style="text-align:center;padding:40px;">
+          <h2 style="color:red;">Erro ao ler o QR Code</h2>
+          <p>${err.message}</p>
+        </div>
+      `;
     }
 
-    document.getElementById("nome").innerText = dados.nome;
-    document.getElementById("req").innerText = dados.req;
-    document.getElementById("itens").innerText = dados.itens;
-    document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
-    document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
+    function confirmarEntrega() {
+      const payload = {
+        nome: dados.nome || "",
+        req: dados.req || "",
+        itens: dados.itens || "",
+        usado: parseFloat(dados.usado || 0),
+        sobra: parseFloat(dados.sobra || 0)
+      };
 
-  } catch (err) {
-    document.body.innerHTML = "<div style='text-align:center;padding:40px;color:red;'><h2>Erro ao carregar dados do QR Code</h2><p>" + err.message + "</p></div>";
-    console.error("Erro ao decodificar dados:", err);
-  }
+      console.log("Enviando dados:", payload);
 
-  function confirmarEntrega() {
-    const payload = {
-      nome: dados.nome || "",
-      req: dados.req || "",
-      itens: dados.itens || "",
-      usado: parseFloat(dados.usado || 0),
-      sobra: parseFloat(dados.sobra || 0)
-    };
-
-    console.log("Enviando para Google Script:", payload);
-
-    fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.text())
-    .then(msg => {
-      console.log("Resposta:", msg);
-      document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
-      document.getElementById("confirmar").disabled = true;
-    })
-    .catch(err => {
-      console.error("Erro ao registrar entrega:", err);
-      document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
-    });
-  }
-</script>
+      fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
+        document.getElementById("confirmar").disabled = true;
+        console.log("Resposta do Google:", msg);
+      })
+      .catch(err => {
+        console.error("Erro ao registrar entrega:", err);
+        document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
+      });
+    }
+  </script>
+</body>
+</html>
