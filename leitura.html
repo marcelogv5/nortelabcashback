@@ -1,63 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Leitura QR Code</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <style>
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #ccc;
-      text-align: center;
-    }
-    button {
-      background-color: #c62828;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Confirmação de Entrega</h2>
-    <p><strong>Nome:</strong> <span id="nome"></span></p>
-    <p><strong>Requisição:</strong> <span id="req"></span></p>
-    <p><strong>Itens:</strong> <span id="itens"></span></p>
-    <p><strong>Usado:</strong> R$ <span id="usado"></span></p>
-    <p><strong>Sobra:</strong> R$ <span id="sobra"></span></p>
-
-    <button id="confirmar" onclick="confirmarEntrega()">Confirmar Entrega</button>
-    <p id="resposta" style="margin-top:20px;font-weight:bold;"></p>
-  </div>
-
-  <script>
-    const params = new URLSearchParams(atob(new URLSearchParams(window.location.search).get("d")));
-    const dados = {};
-    for (const [key, value] of params.entries()) {
-      dados[key] = value;
-    }
-
-    document.getElementById("nome").innerText = dados.nome;
-    document.getElementById("req").innerText = dados.req;
-    document.getElementById("itens").innerText = dados.itens;
-    document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
-    document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
-
-    function confirmarEntrega() {
+function confirmarEntrega() {
   fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(dados)
+    body: JSON.stringify({
+      nome: dados.nome,
+      req: dados.req,
+      itens: dados.itens,
+      usado: parseFloat(dados.usado),
+      sobra: parseFloat(dados.sobra)
+    })
   })
   .then(res => res.text())
   .then(msg => {
@@ -69,7 +22,3 @@
     document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
   });
 }
-
-  </script>
-</body>
-</html>
