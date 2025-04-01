@@ -1,24 +1,48 @@
-function confirmarEntrega() {
-  fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      nome: dados.nome,
-      req: dados.req,
-      itens: dados.itens,
-      usado: parseFloat(dados.usado),
-      sobra: parseFloat(dados.sobra)
+<script>
+  const params = new URLSearchParams(atob(new URLSearchParams(window.location.search).get("d")));
+  const dados = {};
+  for (const [key, value] of params.entries()) {
+    dados[key] = value;
+  }
+
+  document.getElementById("nome").innerText = dados.nome;
+  document.getElementById("req").innerText = dados.req;
+  document.getElementById("itens").innerText = dados.itens;
+  document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
+  document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
+
+  function confirmarEntrega() {
+    const payload = {
+      nome: dados.nome || "",
+      req: dados.req || "",
+      itens: dados.itens || "",
+      usado: parseFloat(dados.usado || 0),
+      sobra: parseFloat(dados.sobra || 0)
+    };
+
+    console.log("Enviando para Google Script:", payload);
+
+    fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
     })
-  })
-  .then(res => res.text())
-  .then(msg => {
-    document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
-    document.getElementById("confirmar").disabled = true;
-  })
-  .catch(err => {
-    console.error("Erro ao registrar entrega:", err);
-    document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
-  });
-}
+    .then(res => {
+      console.log("Resposta recebida:", res);
+      return res.text();
+    })
+    .then(msg => {
+      console.log("Mensagem:", msg);
+      document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
+      document.getElementById("confirmar").disabled = true;
+    })
+    .catch(err => {
+      console.error("Erro ao registrar entrega:", err);
+      document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
+    });
+  }
+</script>
+
+    
