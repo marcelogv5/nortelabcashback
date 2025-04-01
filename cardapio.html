@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cardápio - Cortesia</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .logo { max-width: 180px; margin: 0 auto 20px auto; display: block; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    input[type='number'] { width: 50px; margin-left: 10px; }
+    button { background-color: #c62828; color: white; border: none; padding: 10px 20px; border-radius: 4px; margin-top: 15px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+    <h2 id="boasVindas"></h2>
+    <form id="cardapioForm">
+      <h3>Menu:</h3>
+      Torrada (R$ 2,00) <input type="number" name="Torrada" value="0" min="0"><br>
+      Bolo do Dia (R$ 2,00) <input type="number" name="Bolo" value="0" min="0"><br>
+      Gelatina (R$ 2,00) <input type="number" name="Gelatina" value="0" min="0"><br>
+      Iogurte com mel e granola (R$ 8,00) <input type="number" name="Iogurte" value="0" min="0"><br>
+
+      <h3>Bebidas:</h3>
+      Café com açúcar (R$ 2,00) <input type="number" name="Café com açúcar" value="0" min="0"><br>
+      Café sem açúcar (R$ 2,00) <input type="number" name="Café sem açúcar" value="0" min="0"><br>
+      Chá do dia (R$ 2,00) <input type="number" name="Chá do dia" value="0" min="0"><br><br>
+
+      <div id="resumo"></div>
+      <button id="confirmarEntrega" type="submit">Confirmar Entrega</button>
+    </form>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const nome = params.get("nome");
+    const req = params.get("req");
+    const valor = parseFloat(params.get("valor"));
+    const credito = parseFloat(params.get("credito"));
+
+    document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+
+    const form = document.getElementById("cardapioForm");
+    const resumo = document.getElementById("resumo");
+
+    const precos = {
+      "Torrada": 2,
+      "Bolo": 2,
+      "Gelatina": 2,
+      "Iogurte": 8,
+      "Café com açúcar": 2,
+      "Café sem açúcar": 2,
+      "Chá do dia": 2
+    };
+
+    function calcular() {
+      let total = 0;
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        total += qtd * precos[item];
+      }
+      const saldo = credito - total;
+      resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')} ${saldo < 0 ? "<br><b>Excedente a pagar:</b> R$ " + Math.abs(saldo).toFixed(2).replace('.', ',') : ""}`;
+    }
+
+    form.addEventListener("input", calcular);
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      let usado = 0;
+      let itensSelecionados = [];
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        if (qtd > 0) {
+          usado += qtd * precos[item];
+          itensSelecionados.push(`${item} (${qtd})`);
+        }
+      }
+      const sobra = Math.max(0, credito - usado);
+      const dados = {
+        nome: nome,
+        req: req,
+        itens: itensSelecionados.join(", "),
+        usado: usado,
+        sobra: sobra
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbywM8RL3bwQzRmsLhQApFFkV-sNPtXqytz5tV0gkzHXeeo8w9Oq0UM3UgN-KqQwXaRY/exec", {
+        method: "POST",
+        body: JSON.stringify(dados)
+      }).then(() => {
+        alert("Cortesia entregue com sucesso");
+        window.location.href = "index.html";
+      });
+    });
+
+    calcular();
+  </script>
+
+<div style="margin-top:20px;">
+  <h4>QR Code para conferência:</h4>
+  <div id="qrcode"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+  const qr = new QRious({
+    element: document.getElementById("qrcode"),
+    size: 200,
+    value: window.location.href
+  });
+</script>
+
+</body>
+</html>
