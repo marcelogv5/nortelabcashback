@@ -1,15 +1,24 @@
 <script>
-  const params = new URLSearchParams(atob(new URLSearchParams(window.location.search).get("d")));
-  const dados = {};
-  for (const [key, value] of params.entries()) {
-    dados[key] = value;
-  }
+  let dados = {};
+  try {
+    const paramEncoded = new URLSearchParams(window.location.search).get("d");
+    if (!paramEncoded) throw new Error("Parâmetro 'd' não encontrado na URL");
 
-  document.getElementById("nome").innerText = dados.nome;
-  document.getElementById("req").innerText = dados.req;
-  document.getElementById("itens").innerText = dados.itens;
-  document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
-  document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
+    const params = new URLSearchParams(atob(paramEncoded));
+    for (const [key, value] of params.entries()) {
+      dados[key] = value;
+    }
+
+    document.getElementById("nome").innerText = dados.nome;
+    document.getElementById("req").innerText = dados.req;
+    document.getElementById("itens").innerText = dados.itens;
+    document.getElementById("usado").innerText = parseFloat(dados.usado).toFixed(2).replace(".", ",");
+    document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
+
+  } catch (err) {
+    document.body.innerHTML = "<div style='text-align:center;padding:40px;color:red;'><h2>Erro ao carregar dados do QR Code</h2><p>" + err.message + "</p></div>";
+    console.error("Erro ao decodificar dados:", err);
+  }
 
   function confirmarEntrega() {
     const payload = {
@@ -29,12 +38,9 @@
       },
       body: JSON.stringify(payload)
     })
-    .then(res => {
-      console.log("Resposta recebida:", res);
-      return res.text();
-    })
+    .then(res => res.text())
     .then(msg => {
-      console.log("Mensagem:", msg);
+      console.log("Resposta:", msg);
       document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
       document.getElementById("confirmar").disabled = true;
     })
@@ -44,5 +50,3 @@
     });
   }
 </script>
-
-    
