@@ -61,7 +61,7 @@
     const nome = params.get("nome");
     const req = params.get("req");
     const valor = parseFloat(params.get("valor"));
-    const credito = parseFloat(params.get("credito"));
+    const credito = valor < 160 ? 4 : 8;
 
     document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
