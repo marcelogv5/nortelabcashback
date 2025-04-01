@@ -1,1 +1,36 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>QR Code</title><link rel="stylesheet" href="assets/style.css"></head><body><div class="container"><h2>QR Code do Pedido</h2><p>Entregue este QR Code na copa.</p><div id="qrcode"></div><button onclick="window.print()">Imprimir</button></div><script>const dados = new URLSearchParams(window.location.search);const payload = btoa(dados.toString());const url = window.location.origin + "/nortelabcashback/leitura.html?d=" + payload;const img = document.createElement("img");img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);document.getElementById("qrcode").appendChild(img);</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .container {
+      max-width: 400px;
+      margin: auto;
+      text-align: center;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>QR Code do Pedido</h2>
+    <p>Entregue este QR Code na copa.</p>
+    <div id="qrcode"></div>
+    <button onclick="window.print()">Imprimir</button>
+  </div>
+
+  <script>
+    const dados = new URLSearchParams(window.location.search);
+    const payload = btoa(dados.toString());
+    const url = window.location.origin + "/nortelabcashback/leitura.html?d=" + payload;
+    const img = document.createElement("img");
+    img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
+    document.getElementById("qrcode").appendChild(img);
+  </script>
+</body>
+</html>
