@@ -52,19 +52,24 @@
     document.getElementById("sobra").innerText = parseFloat(dados.sobra).toFixed(2).replace(".", ",");
 
     function confirmarEntrega() {
-      fetch("https://script.google.com/macros/s/AKfycbywM8RL3bwQzRmsLhQApFFkV-sNPtXqytz5tV0gkzHXeeo8w9Oq0UM3UgN-KqQwXaRY/exec", {
-        method: "POST",
-        body: JSON.stringify(dados)
-      })
-      .then(res => res.text())
-      .then(msg => {
-        document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
-        document.getElementById("confirmar").disabled = true;
-      })
-      .catch(err => {
-        document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
-      });
-    }
+  fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(dados)
+  })
+  .then(res => res.text())
+  .then(msg => {
+    document.getElementById("resposta").innerText = "Cortesia entregue ao paciente!";
+    document.getElementById("confirmar").disabled = true;
+  })
+  .catch(err => {
+    console.error("Erro ao registrar entrega:", err);
+    document.getElementById("resposta").innerText = "Erro ao registrar entrega.";
+  });
+}
+
   </script>
 </body>
 </html>
