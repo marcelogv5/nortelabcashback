@@ -73,12 +73,35 @@
       <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 2,00)</div>
 
       <div id="resumo" style="margin-top: 15px;"></div>
+
       <div class="item">
         <span>Confirmar pagamento:</span>
         <div id="paymentToggle" class="toggle-button">
           <div id="toggleSwitch"></div>
         </div>
       </div>
+
+      <!-- Se houver excedente, as opções de pagamento e recebido por serão mostradas -->
+      <div id="opcoesPagamento" style="display:none;">
+        <div class="item">
+          <label>Forma de Pagamento</label>
+          <select id="pagamento" disabled>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">Pix</option>
+            <option value="Cartão Crédito">Cartão Crédito</option>
+            <option value="Cartão Débito">Cartão Débito</option>
+          </select>
+        </div>
+        <div class="item">
+          <label>Recebido por</label>
+          <select id="recebidoPor" disabled>
+            <option value="Jéssica">Jéssica</option>
+            <option value="Marilene">Marilene</option>
+            <option value="Ysloane">Ysloane</option>
+          </select>
+        </div>
+      </div>
+
       <button type="button" id="finalizarButton" disabled onclick="gerarQRCode()">Gerar QR Code</button>
     </form>
   </div>
@@ -122,13 +145,22 @@
         resumo.innerHTML += ` 
           <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
         `;
+        // Mostrar as opções de pagamento e recebido por
+        document.getElementById("opcoesPagamento").style.display = "block";
         document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
       } else {
+        document.getElementById("opcoesPagamento").style.display = "none"; // Esconder as opções de pagamento se não houver excedente
         document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
       }
     }
 
     function gerarQRCode() {
+      // Verificação se o pagamento foi confirmado antes de gerar o QR Code
+      if (!isPagoConfirmado) {
+        alert("Favor confirmar o recebimento.");
+        return;
+      }
+
       let usado = 0;
       let itensSelecionados = [];
       for (let item in precos) {
@@ -169,4 +201,4 @@
     calcular();
   </script>
 </body>
-</html>
+</
