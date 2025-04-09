@@ -150,8 +150,8 @@
         document.getElementById("opcoesPagamento").style.display = "block";
         document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
         // Habilitar as listas de seleção de pagamento e recebido por
-        document.getElementById("pagamento").disabled = false;
-        document.getElementById("recebidoPor").disabled = false;
+        document.getElementById("pagamento").disabled = !isPagoConfirmado;
+        document.getElementById("recebidoPor").disabled = !isPagoConfirmado;
       } else {
         document.getElementById("opcoesPagamento").style.display = "none"; // Esconder as opções de pagamento se não houver excedente
         document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
@@ -162,8 +162,9 @@
     }
 
     function gerarQRCode() {
-      // Verificação se o pagamento foi confirmado antes de gerar o QR Code
-      if (!isPagoConfirmado) {
+      // Se não houver excedente, pode gerar QR Code sem confirmação
+      const saldo = credito - Object.values(precos).reduce((acc, price) => acc + price, 0);
+      if (saldo < 0 && !isPagoConfirmado) {
         alert("Favor confirmar o recebimento.");
         return;
       }
