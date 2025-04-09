@@ -108,8 +108,11 @@
         `;
 
         // Habilitar o botão somente se o checkbox for marcado
-        document.getElementById("confirmarRecebimento").addEventListener("change", function() {
-          document.getElementById("finalizarButton").disabled = !this.checked;
+        const confirmarCheckbox = document.getElementById("confirmarRecebimento");
+        confirmarCheckbox.addEventListener("change", function() {
+          const finalizarButton = document.getElementById("finalizarButton");
+          // Desabilita o botão se não estiver marcado
+          finalizarButton.disabled = !this.checked;
         });
       } else {
         // Se não houver excedente, o botão de gerar QR Code deve ser liberado
