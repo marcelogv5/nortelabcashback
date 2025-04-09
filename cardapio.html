@@ -168,4 +168,44 @@
         return;
       }
 
-      let
+      let usado = 0;
+      let itensSelecionados = [];
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        if (qtd > 0) {
+          usado += qtd * precos[item];
+          itensSelecionados.push(`${item} (${qtd})`);
+        }
+      }
+      const sobra = Math.max(0, credito - usado);
+      const dados = {
+        nome: nome,
+        req: req,
+        itens: itensSelecionados.join(", "),
+        usado: usado,
+        sobra: sobra
+      };
+      const url = new URL("qrcode.html", window.location.href);
+      for (let key in dados) {
+        url.searchParams.set(key, dados[key]);
+      }
+      window.open(url.toString(), "_blank");
+    }
+
+    // Função para controlar o toggle
+    document.getElementById("paymentToggle").addEventListener("click", function() {
+      const toggleSwitch = document.getElementById("toggleSwitch");
+      // Alterar a cor e posição do toggle (efetuar mudança visual)
+      isPagoConfirmado = !isPagoConfirmado;
+      toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+      toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
+
+      // Atualizar o estado do botão de "Gerar QR Code"
+      document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+    });
+
+    form.addEventListener("input", calcular);
+    calcular();
+  </script>
+</body>
+</html>
