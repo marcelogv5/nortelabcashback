@@ -162,9 +162,8 @@
     }
 
     function gerarQRCode() {
-      // Se não houver excedente, pode gerar QR Code sem confirmação
-      const saldo = credito - Object.values(precos).reduce((acc, price) => acc + price, 0);
-      if (saldo < 0 && !isPagoConfirmado) {
+      // Verificação se o pagamento foi confirmado antes de gerar o QR Code
+      if (!isPagoConfirmado) {
         alert("Favor confirmar o recebimento.");
         return;
       }
