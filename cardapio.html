@@ -74,7 +74,7 @@
 
       <div id="resumo" style="margin-top: 15px;"></div>
 
-      <!-- Opções de pagamento e recebido por aparecerão apenas se houver excedente -->
+      <!-- As opções de pagamento agora ficam acima do botão -->
       <div id="opcoesPagamento" style="display:none;">
         <div class="item">
           <label>Forma de Pagamento</label>
@@ -202,6 +202,12 @@
 
       // Atualizar o estado do botão de "Gerar QR Code"
       document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+
+      // Habilitar as opções de pagamento e recebido por quando o pagamento for confirmado
+      if (isPagoConfirmado && document.getElementById("opcoesPagamento").style.display === "block") {
+        document.getElementById("pagamento").disabled = false;
+        document.getElementById("recebidoPor").disabled = false;
+      }
     });
 
     form.addEventListener("input", calcular);
