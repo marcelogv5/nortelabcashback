@@ -32,6 +32,28 @@
       margin-top: 15px;
       font-size: 16px;
     }
+    /* Estilo para o toggle (botão de chave) */
+    .toggle-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100px;
+      background-color: #ccc;
+      border-radius: 20px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .toggle-button div {
+      width: 45px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .active {
+      background-color: #66bb6a;
+      justify-content: flex-end;
+    }
   </style>
 </head>
 <body>
@@ -51,6 +73,12 @@
       <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 2,00)</div>
 
       <div id="resumo" style="margin-top: 15px;"></div>
+      <div class="item">
+        <span>Confirmar pagamento:</span>
+        <div id="paymentToggle" class="toggle-button">
+          <div id="toggleSwitch"></div>
+        </div>
+      </div>
       <button type="button" id="finalizarButton" disabled onclick="gerarQRCode()">Gerar QR Code</button>
     </form>
   </div>
@@ -78,6 +106,8 @@
       "Chá do dia": 2
     };
 
+    let isPagoConfirmado = false; // Variável para controlar o estado de confirmação do pagamento
+
     function calcular() {
       let total = 0;
       for (let item in precos) {
@@ -91,32 +121,10 @@
       if (saldo < 0) {
         resumo.innerHTML += ` 
           <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
-          <br><label>Forma de Pagamento</label>
-          <select id="pagamento">
-            <option value="Dinheiro">Dinheiro</option>
-            <option value="Pix">Pix</option>
-            <option value="Cartão Crédito">Cartão Crédito</option>
-            <option value="Cartão Débito">Cartão Débito</option>
-          </select>
-          <br><label>Recebido por</label>
-          <select id="recebidoPor">
-            <option value="Jéssica">Jéssica</option>
-            <option value="Marilene">Marilene</option>
-            <option value="Ysloane">Ysloane</option>
-          </select>
-          <br><input type="checkbox" id="confirmarRecebimento"> Confirmo o recebimento
         `;
-
-        // Habilitar o botão somente se o checkbox for marcado
-        const confirmarCheckbox = document.getElementById("confirmarRecebimento");
-        confirmarCheckbox.addEventListener("change", function() {
-          const finalizarButton = document.getElementById("finalizarButton");
-          // Desabilita o botão se não estiver marcado
-          finalizarButton.disabled = !this.checked;
-        });
+        document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
       } else {
-        // Se não houver excedente, o botão de gerar QR Code deve ser liberado
-        document.getElementById("finalizarButton").disabled = false;
+        document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
       }
     }
 
@@ -144,6 +152,18 @@
       }
       window.open(url.toString(), "_blank");
     }
+
+    // Função para controlar o toggle
+    document.getElementById("paymentToggle").addEventListener("click", function() {
+      const toggleSwitch = document.getElementById("toggleSwitch");
+      // Alterar a cor e posição do toggle (efetuar mudança visual)
+      isPagoConfirmado = !isPagoConfirmado;
+      toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+      toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
+
+      // Atualizar o estado do botão de "Gerar QR Code"
+      document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+    });
 
     form.addEventListener("input", calcular);
     calcular();
