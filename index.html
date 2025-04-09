@@ -64,7 +64,7 @@
       <label>Requisição</label>
       <input type="text" name="req" required><br>
       <label>Valor do Exame (R$)</label>
-      <input type="number" name="valor" required><br>
+      <input type="text" name="valor" required pattern="^\d+(\,\d{1,2})?$" title="Digite o valor no formato 00,00">
       <input type="hidden" name="credito" value="8">
       <button type="submit">Gerar Cardápio</button>
     </form>
