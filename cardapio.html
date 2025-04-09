@@ -87,6 +87,29 @@
       const saldo = credito - total;
       resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')} ${saldo < 0 ? "<br><b>Excedente a pagar:</b> R$ " + Math.abs(saldo).toFixed(2).replace('.', ',') : ""}`;
     }
+if (saldo < 0) {
+  resumo.innerHTML += `<br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
+    <br><label>Forma de Pagamento</label>
+    <select id="pagamento">
+      <option value="Dinheiro">Dinheiro</option>
+      <option value="Pix">Pix</option>
+      <option value="Cartão Crédito">Cartão Crédito</option>
+      <option value="Cartão Débito">Cartão Débito</option>
+    </select>
+    <br><label>Recebido por</label>
+    <select id="recebidoPor">
+      <option value="Jéssica">Jéssica</option>
+      <option value="Marilene">Marilene</option>
+      <option value="Ysloane">Ysloane</option>
+    </select>
+    <br><input type="checkbox" id="confirmarRecebimento"> Confirmo o recebimento
+    <br><button id="finalizarButton" disabled>Gerar QR Code</button>`;
+    
+  document.getElementById("finalizarButton").disabled = !document.getElementById("confirmarRecebimento").checked;
+  document.getElementById("confirmarRecebimento").addEventListener("change", function() {
+    document.getElementById("finalizarButton").disabled = !this.checked;
+  });
+}
 
     function gerarQRCode() {
       let usado = 0;
