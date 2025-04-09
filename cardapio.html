@@ -148,9 +148,15 @@
         // Mostrar as opções de pagamento e recebido por
         document.getElementById("opcoesPagamento").style.display = "block";
         document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
+        // Habilitar as listas de seleção de pagamento e recebido por
+        document.getElementById("pagamento").disabled = !isPagoConfirmado;
+        document.getElementById("recebidoPor").disabled = !isPagoConfirmado;
       } else {
         document.getElementById("opcoesPagamento").style.display = "none"; // Esconder as opções de pagamento se não houver excedente
         document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
+        // Desabilitar as listas de seleção de pagamento e recebido por se não houver excedente
+        document.getElementById("pagamento").disabled = true;
+        document.getElementById("recebidoPor").disabled = true;
       }
     }
 
