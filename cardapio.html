@@ -51,7 +51,7 @@
       <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 2,00)</div>
 
       <div id="resumo" style="margin-top: 15px;"></div>
-      <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
+      <button type="button" id="finalizarButton" disabled onclick="gerarQRCode()">Gerar QR Code</button>
     </form>
   </div>
 
@@ -78,41 +78,44 @@
       "Chá do dia": 2
     };
 
-function calcular() {
-  let total = 0;
-  for (let item in precos) {
-    const qtd = parseInt(form[item].value || "0");
-    total += qtd * precos[item];
-  }
-  const saldo = credito - total;
-  resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
+    function calcular() {
+      let total = 0;
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        total += qtd * precos[item];
+      }
+      const saldo = credito - total;
+      resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
 
-  if (saldo < 0) {
-    resumo.innerHTML += `
-      <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
-      <br><label>Forma de Pagamento</label>
-      <select id="pagamento">
-        <option value="Dinheiro">Dinheiro</option>
-        <option value="Pix">Pix</option>
-        <option value="Cartão Crédito">Cartão Crédito</option>
-        <option value="Cartão Débito">Cartão Débito</option>
-      </select>
-      <br><label>Recebido por</label>
-      <select id="recebidoPor">
-        <option value="Jéssica">Jéssica</option>
-        <option value="Marilene">Marilene</option>
-        <option value="Ysloane">Ysloane</option>
-      </select>
-      <br><input type="checkbox" id="confirmarRecebimento"> Confirmo o recebimento
-      <br><button id="finalizarButton" disabled>Gerar QR Code</button>
-    `;
+      if (saldo < 0) {
+        resumo.innerHTML += `
+          <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
+          <br><label>Forma de Pagamento</label>
+          <select id="pagamento">
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">Pix</option>
+            <option value="Cartão Crédito">Cartão Crédito</option>
+            <option value="Cartão Débito">Cartão Débito</option>
+          </select>
+          <br><label>Recebido por</label>
+          <select id="recebidoPor">
+            <option value="Jéssica">Jéssica</option>
+            <option value="Marilene">Marilene</option>
+            <option value="Ysloane">Ysloane</option>
+          </select>
+          <br><input type="checkbox" id="confirmarRecebimento"> Confirmo o recebimento
+          <br><button id="finalizarButton" disabled>Gerar QR Code</button>
+        `;
 
-    document.getElementById("confirmarRecebimento").addEventListener("change", function() {
-      document.getElementById("finalizarButton").disabled = !this.checked;
-    });
-  }
-}
-
+        // Habilitar o botão somente se o checkbox for marcado
+        document.getElementById("confirmarRecebimento").addEventListener("change", function() {
+          document.getElementById("finalizarButton").disabled = !this.checked;
+        });
+      } else {
+        // Se não houver excedente, o botão de gerar QR Code deve ser liberado
+        document.getElementById("finalizarButton").disabled = false;
+      }
+    }
 
     function gerarQRCode() {
       let usado = 0;
