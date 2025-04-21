@@ -1,20 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Fila de Pedidos</title>
   <style>
-    body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
     .pedido {
       background: white;
       border-radius: 8px;
       box-shadow: 0 0 10px #ccc;
       padding: 15px;
-      margin-bottom: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
     }
-    .pedido h3 { margin-top: 0; }
-    button {
+    .pedido h3 {
+      margin-top: 0;
+    }
+    .pedido button {
       background: #2e7d32;
       color: white;
       border: none;
@@ -22,44 +35,54 @@
       border-radius: 4px;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKLFKHKyqQgdvwG9H9SbVdE45Mz54cEZVX3tVZucCFFk_UmQCL8PYQlRtx_pKGG1bAZpREOYTjDNWb/pub?output=csv";
-    
+
     async function carregarFila() {
-      const res = await fetch(urlCsv);
-      const text = await res.text();
-      const linhas = text.split("\n").slice(1); // Ignora cabeçalho
+      try {
+        const res = await fetch(urlCsv);
+        const text = await res.text();
+        const linhas = text.split("\n").slice(1); // ignora cabeçalho
 
-      const fila = linhas
-        .map(linha => {
-          const [nome, req, itens, usado, sobra] = linha.split(",");
-          return { nome, req, itens, usado, sobra };
-        })
-        .filter(p => p.nome); // remove linhas em branco
+        const fila = linhas
+          .map(l => l.trim())
+          .filter(l => l)
+          .map(l => {
+            const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
+            return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
+          });
 
-      const container = document.getElementById("filaContainer");
-      container.innerHTML = "";
+        const container = document.getElementById("filaContainer");
+        container.innerHTML = "";
 
-      fila.forEach((p, idx) => {
-        const div = document.createElement("div");
-        div.className = "pedido";
-        div.innerHTML = `
-          <h3>${p.nome}</h3>
-          <p><strong>Requisição:</strong> ${p.req}</p>
-          <p><strong>Itens:</strong> ${p.itens}</p>
-          <p><strong>Usado:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
-          <p><strong>Sobra:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-          <button onclick="confirmarEntrega(this)">Pedido Atendido</button>
-        `;
-        container.appendChild(div);
-      });
+        fila.forEach((p) => {
+          const div = document.createElement("div");
+          div.className = "pedido";
+          div.innerHTML = `
+            <h3>${p.nome}</h3>
+            <p><strong>Requisição:</strong> ${p.req}</p>
+            <p><strong>Itens selecionados:</strong> ${p.itens}</p>
+            <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
+            <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
+            <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
+            <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
+            <button onclick="confirmarEntrega(this)">Pedido Atendido</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        document.getElementById("filaContainer").innerText = "Erro ao carregar dados.";
+        console.error(error);
+      }
     }
 
     async function confirmarEntrega(botao) {
@@ -69,6 +92,8 @@
       const itens = div.querySelector("p:nth-child(3)").innerText.split(": ")[1];
       const usado = parseFloat(div.querySelector("p:nth-child(4)").innerText.split("R$ ")[1].replace(",", "."));
       const sobra = parseFloat(div.querySelector("p:nth-child(5)").innerText.split("R$ ")[1].replace(",", "."));
+      const pagamento = div.querySelector("p:nth-child(6)").innerText.split(": ")[1];
+      const recebidoPor = div.querySelector("p:nth-child(7)").innerText.split(": ")[1];
 
       const form = new FormData();
       form.append("nome", nome);
@@ -76,6 +101,8 @@
       form.append("itens", itens);
       form.append("usado", usado);
       form.append("sobra", sobra);
+      form.append("pagamento", pagamento);
+      form.append("recebidoPor", recebidoPor);
 
       await fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
         method: "POST",
@@ -87,7 +114,7 @@
     }
 
     carregarFila();
-    setInterval(carregarFila, 60000); // atualiza a cada 60 segundos
+    setInterval(carregarFila, 60000); // atualiza a cada minuto
   </script>
 </body>
 </html>
