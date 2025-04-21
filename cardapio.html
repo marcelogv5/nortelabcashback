@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cardápio - Cortesia</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .logo { max-width: 180px; margin: 0 auto 20px auto; display: block; }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .item input[type='number'] {
+      width: 50px;
+      margin-right: 10px;
+    }
+    button {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+    /* Estilo para o toggle (botão de chave) */
+    .toggle-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100px;
+      background-color: #ccc;
+      border-radius: 20px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .toggle-button div {
+      width: 45px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .active {
+      background-color: #66bb6a;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+    <h2 id="boasVindas"></h2>
+    <form id="cardapioForm">
+      <h3>Menu:</h3>
+      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo do Dia (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte com mel e granola (R$ 8,00)</div>
+
+      <h3>Bebidas:</h3>
+      <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 2,00)</div>
+
+      <div id="resumo" style="margin-top: 15px;"></div>
+
+      <!-- As opções de pagamento agora ficam acima do botão -->
+      <div id="opcoesPagamento" style="display:none;">
+        <div class="item">
+          <label>Forma de Pagamento</label>
+          <select id="pagamento" disabled>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">Pix</option>
+            <option value="Cartão Crédito">Cartão Crédito</option>
+            <option value="Cartão Débito">Cartão Débito</option>
+          </select>
+        </div>
+        <div class="item">
+          <label>Recebido por</label>
+          <select id="recebidoPor" disabled>
+            <option value="Jéssica">Jéssica</option>
+            <option value="Marilene">Marilene</option>
+            <option value="Ysloane">Ysloane</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="item">
+        <span>Confirmar pagamento:</span>
+        <div id="paymentToggle" class="toggle-button">
+          <div id="toggleSwitch"></div>
+        </div>
+      </div>
+
+      <!-- Botão "Gerar QR Code" abaixo das opções de pagamento -->
+      <button type="button" id="finalizarButton" disabled onclick="gerarQRCode()">Gerar QR Code</button>
+    </form>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const nome = params.get("nome");
+    const req = params.get("req");
+    const valor = parseFloat(params.get("valor").replace(",", "."));
+    const credito = valor < 160 ? 4 : 8;
+
+    document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+
+    const form = document.getElementById("cardapioForm");
+    const resumo = document.getElementById("resumo");
+
+    const precos = {
+      "Torrada": 2,
+      "Bolo": 2,
+      "Gelatina": 2,
+      "Iogurte": 8,
+      "Café com açúcar": 2,
+      "Café sem açúcar": 2,
+      "Chá do dia": 2
+    };
+
+    let isPagoConfirmado = false; // Variável para controlar o estado de confirmação do pagamento
+
+    function calcular() {
+      let total = 0;
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        total += qtd * precos[item];
+      }
+      const saldo = credito - total;
+      resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
+
+      // Quando houver excedente, adicionar opções de pagamento e confirmação
+      if (saldo < 0) {
+        resumo.innerHTML += ` 
+          <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
+        `;
+        // Mostrar as opções de pagamento e recebido por
+        document.getElementById("opcoesPagamento").style.display = "block";
+        document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
+        // Habilitar as listas de seleção de pagamento e recebido por
+        document.getElementById("pagamento").disabled = !isPagoConfirmado;
+        document.getElementById("recebidoPor").disabled = !isPagoConfirmado;
+      } else {
+        document.getElementById("opcoesPagamento").style.display = "none"; // Esconder as opções de pagamento se não houver excedente
+        document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
+        // Desabilitar as listas de seleção de pagamento e recebido por se não houver excedente
+        document.getElementById("pagamento").disabled = true;
+        document.getElementById("recebidoPor").disabled = true;
+      }
+    }
+
+    function gerarQRCode() {
+      // Verificação se o pagamento foi confirmado antes de gerar o QR Code
+      if (!isPagoConfirmado) {
+        alert("Favor confirmar o recebimento.");
+        return;
+      }
+
+      let usado = 0;
+      let itensSelecionados = [];
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        if (qtd > 0) {
+          usado += qtd * precos[item];
+          itensSelecionados.push(`${item} (${qtd})`);
+        }
+      }
+      const sobra = Math.max(0, credito - usado);
+      const dados = {
+        nome: nome,
+        req: req,
+        itens: itensSelecionados.join(", "),
+        usado: usado,
+        sobra: sobra
+      };
+      const url = new URL("qrcode.html", window.location.href);
+      for (let key in dados) {
+        url.searchParams.set(key, dados[key]);
+      }
+      window.open(url.toString(), "_blank");
+    }
+
+    // Função para controlar o toggle
+    document.getElementById("paymentToggle").addEventListener("click", function() {
+      const toggleSwitch = document.getElementById("toggleSwitch");
+      // Alterar a cor e posição do toggle (efetuar mudança visual)
+      isPagoConfirmado = !isPagoConfirmado;
+      toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+      toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
+
+      // Atualizar o estado do botão de "Gerar QR Code"
+      document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+    });
+
+    form.addEventListener("input", calcular);
+    calcular();
+  </script>
+</body>
+</html>
