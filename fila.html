@@ -48,21 +48,35 @@
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKLFKHKyqQgdvwG9H9SbVdE45Mz54cEZVX3tVZucCFFk_UmQCL8PYQlRtx_pKGG1bAZpREOYTjDNWb/pub?output=csv";
 
     async function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      const novo = localStorage.getItem("pedido_temp");
+      if (novo) {
+        const p = JSON.parse(novo);
+        const div = document.createElement("div");
+        div.className = "pedido";
+        div.innerHTML = `
+          <h3>${p.nome}</h3>
+          <p><strong>Requisição:</strong> ${p.req}</p>
+          <p><strong>Itens selecionados:</strong> ${p.itens}</p>
+          <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
+          <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
+          <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
+          <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
+          <button onclick="confirmarEntrega(this, true)">Pedido Atendido</button>
+        `;
+        container.appendChild(div);
+      }
+
       try {
         const res = await fetch(urlCsv);
         const text = await res.text();
-        const linhas = text.split("\n").slice(1); // ignora cabeçalho
-
-        const fila = linhas
-          .map(l => l.trim())
-          .filter(l => l)
-          .map(l => {
-            const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
-            return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
-          });
-
-        const container = document.getElementById("filaContainer");
-        container.innerHTML = "";
+        const linhas = text.split("\n").slice(1);
+        const fila = linhas.map(l => l.trim()).filter(l => l).map(l => {
+          const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
+          return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
+        });
 
         fila.forEach((p) => {
           const div = document.createElement("div");
@@ -75,17 +89,17 @@
             <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
             <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
             <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-            <button onclick="confirmarEntrega(this)">Pedido Atendido</button>
+            <button onclick="this.parentElement.remove()">Ocultar</button>
           `;
           container.appendChild(div);
         });
       } catch (error) {
-        document.getElementById("filaContainer").innerText = "Erro ao carregar dados.";
+        container.innerHTML += "<p>Erro ao carregar pedidos da planilha.</p>";
         console.error(error);
       }
     }
 
-    async function confirmarEntrega(botao) {
+    async function confirmarEntrega(botao, limparLocal = false) {
       const div = botao.parentElement;
       const nome = div.querySelector("h3").innerText;
       const req = div.querySelector("p:nth-child(2)").innerText.split(": ")[1];
@@ -110,11 +124,12 @@
         body: form
       });
 
+      if (limparLocal) localStorage.removeItem("pedido_temp");
       div.remove();
     }
 
     carregarFila();
-    setInterval(carregarFila, 60000); // atualiza a cada minuto
+    setInterval(carregarFila, 60000);
   </script>
 </body>
 </html>
