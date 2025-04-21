@@ -131,7 +131,7 @@
       form.append("recebidoPor", recebidoPor);
       form.append("valor_excedente_pago", usado > 8 ? "R$ " + (usado - 8).toFixed(2).replace(".", ",") : "R$ 0,00");
 
-      fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
         mode: "no-cors",
         body: form
