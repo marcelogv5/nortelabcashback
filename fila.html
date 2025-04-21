@@ -24,9 +24,7 @@
       max-width: 600px;
       text-align: left;
     }
-    .pedido h3 {
-      margin-top: 0;
-    }
+    .pedido h3 { margin-top: 0; }
     .pedido button {
       background: #2e7d32;
       color: white;
@@ -47,59 +45,53 @@
   <script>
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKLFKHKyqQgdvwG9H9SbVdE45Mz54cEZVX3tVZucCFFk_UmQCL8PYQlRtx_pKGG1bAZpREOYTjDNWb/pub?output=csv";
 
-    async function carregarFila() {
+    function criarCard(p, index, fromLocal) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${p.nome}</h3>
+        <p><strong>Requisição:</strong> ${p.req}</p>
+        <p><strong>Itens selecionados:</strong> ${p.itens}</p>
+        <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
+        <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
+        <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
+        <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
+        <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
       const container = document.getElementById("filaContainer");
       container.innerHTML = "";
 
-      const novo = localStorage.getItem("pedido_temp");
-      if (novo) {
-        const p = JSON.parse(novo);
-        const div = document.createElement("div");
-        div.className = "pedido";
-        div.innerHTML = `
-          <h3>${p.nome}</h3>
-          <p><strong>Requisição:</strong> ${p.req}</p>
-          <p><strong>Itens selecionados:</strong> ${p.itens}</p>
-          <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
-          <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-          <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
-          <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-          <button onclick="confirmarEntrega(this, true)">Pedido Atendido</button>
-        `;
+      let filaLocal = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+
+      filaLocal.forEach((p, index) => {
+        const div = criarCard(p, index, true);
         container.appendChild(div);
-      }
+      });
 
-      try {
-        const res = await fetch(urlCsv);
-        const text = await res.text();
-        const linhas = text.split("\n").slice(1);
-        const fila = linhas.map(l => l.trim()).filter(l => l).map(l => {
-          const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
-          return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
-        });
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.split("\n").slice(1);
+          const filaPlanilha = linhas.map(l => l.trim()).filter(l => l).map(l => {
+            const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
+            return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
+          });
 
-        fila.forEach((p) => {
-          const div = document.createElement("div");
-          div.className = "pedido";
-          div.innerHTML = `
-            <h3>${p.nome}</h3>
-            <p><strong>Requisição:</strong> ${p.req}</p>
-            <p><strong>Itens selecionados:</strong> ${p.itens}</p>
-            <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
-            <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-            <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
-            <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-            <button onclick="this.parentElement.remove()">Ocultar</button>
-          `;
-          container.appendChild(div);
+          filaPlanilha.forEach(p => {
+            const div = criarCard(p, 0, false);
+            container.appendChild(div);
+          });
+        })
+        .catch(() => {
+          container.innerHTML += "<p>Erro ao carregar planilha.</p>";
         });
-      } catch (error) {
-        container.innerHTML += "<p>Erro ao carregar pedidos da planilha.</p>";
-        console.error(error);
-      }
     }
 
-    async function confirmarEntrega(botao, limparLocal = false) {
+    function confirmarEntrega(botao, isLocal, index) {
       const div = botao.parentElement;
       const nome = div.querySelector("h3").innerText;
       const req = div.querySelector("p:nth-child(2)").innerText.split(": ")[1];
@@ -118,18 +110,34 @@
       form.append("pagamento", pagamento);
       form.append("recebidoPor", recebidoPor);
 
-      await fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
         method: "POST",
         mode: "no-cors",
         body: form
       });
 
-      if (limparLocal) localStorage.removeItem("pedido_temp");
+      if (isLocal) {
+        let fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+        fila.splice(index, 1);
+        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+      }
+
       div.remove();
     }
 
+    function salvarNovoPedidoSeExistir() {
+      const pedidoTemp = localStorage.getItem("pedido_temp");
+      if (pedidoTemp) {
+        const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+        fila.push(JSON.parse(pedidoTemp));
+        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+        localStorage.removeItem("pedido_temp");
+      }
+    }
+
+    salvarNovoPedidoSeExistir();
     carregarFila();
-    setInterval(carregarFila, 60000);
+    setInterval(carregarFila, 30000);
   </script>
 </body>
 </html>
