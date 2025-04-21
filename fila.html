@@ -104,11 +104,32 @@
       const form = new FormData();
       form.append("nome", nome);
       form.append("req", req);
-      form.append("itens", itens);
-      form.append("usado", usado);
-      form.append("sobra", sobra);
+      const lista = itens.split(", ");
+      const mapa = {
+        "Torrada": 0, "Bolo": 0, "Gelatina": 0, "Iogurte": 0,
+        "Café sem açúcar": 0, "Café com açúcar": 0, "Chá do dia": 0
+      };
+      lista.forEach(el => {
+        const match = el.match(/^(.*?)\s*\((\d+)\)$/);
+        if (match && mapa.hasOwnProperty(match[1])) {
+          mapa[match[1]] = match[2];
+        }
+      });
+      form.append("Torrada", mapa["Torrada"]);
+      form.append("Bolo", mapa["Bolo"]);
+      form.append("Gelatina", mapa["Gelatina"]);
+      form.append("Iogurte", mapa["Iogurte"]);
+      form.append("Café sem açúcar", mapa["Café sem açúcar"]);
+      form.append("Café com açúcar", mapa["Café com açúcar"]);
+      form.append("Chá do dia", mapa["Chá do dia"]);
+      form.append("usado", "R$" + usado.toFixed(2).replace(".", ","));
+      form.append("sobra", "R$" + sobra.toFixed(2).replace(".", ","));
+      const agora = new Date();
+      const expira = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
+      form.append("expira", expira.toLocaleString("pt-BR"));
       form.append("pagamento", pagamento);
       form.append("recebidoPor", recebidoPor);
+      form.append("valor_excedente_pago", usado > 8 ? "R$ " + (usado - 8).toFixed(2).replace(".", ",") : "R$ 0,00");
 
       fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
         method: "POST",
