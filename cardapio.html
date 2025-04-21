@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Cardápio - Cortesia</title>
-  <link rel="stylesheet" href="assets/style.css">
   <style>
     .logo { max-width: 180px; margin: 0 auto 20px auto; display: block; }
     .container {
@@ -32,7 +31,6 @@
       margin-top: 15px;
       font-size: 16px;
     }
-    /* Estilo para o toggle (botão de chave) */
     .toggle-button {
       display: flex;
       align-items: center;
@@ -74,11 +72,10 @@
 
       <div id="resumo" style="margin-top: 15px;"></div>
 
-      <!-- As opções de pagamento agora ficam acima do botão -->
       <div id="opcoesPagamento" style="display:none;">
         <div class="item">
           <label>Forma de Pagamento</label>
-          <select id="pagamento" disabled>
+          <select id="pagamento">
             <option value="Dinheiro">Dinheiro</option>
             <option value="Pix">Pix</option>
             <option value="Cartão Crédito">Cartão Crédito</option>
@@ -87,7 +84,7 @@
         </div>
         <div class="item">
           <label>Recebido por</label>
-          <select id="recebidoPor" disabled>
+          <select id="recebidoPor">
             <option value="Jéssica">Jéssica</option>
             <option value="Marilene">Marilene</option>
             <option value="Ysloane">Ysloane</option>
@@ -102,12 +99,10 @@
         </div>
       </div>
 
-      <!-- Botão "Gerar QR Code" abaixo das opções de pagamento -->
-      <button type="button" id="finalizarButton" disabled onclick="gerarQRCode()">Enviar o cardápio</button>
+      <button type="button" id="finalizarButton" disabled onclick="enviarCardapio()">Enviar o cardápio</button>
     </form>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const nome = params.get("nome");
@@ -130,7 +125,7 @@
       "Chá do dia": 2
     };
 
-    let isPagoConfirmado = false; // Variável para controlar o estado de confirmação do pagamento
+    let isPagoConfirmado = false;
 
     function calcular() {
       let total = 0;
@@ -141,63 +136,17 @@
       const saldo = credito - total;
       resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
 
-      // Quando houver excedente, adicionar opções de pagamento e confirmação
       if (saldo < 0) {
-        resumo.innerHTML += ` 
-          <br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}
-        `;
-        // Mostrar as opções de pagamento e recebido por
+        resumo.innerHTML += `<br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}`;
         document.getElementById("opcoesPagamento").style.display = "block";
-        document.getElementById("finalizarButton").disabled = !isPagoConfirmado; // Habilitar o botão apenas quando confirmado
-        // Habilitar as listas de seleção de pagamento e recebido por
-        document.getElementById("pagamento").disabled = false;
-        document.getElementById("recebidoPor").disabled = false;
+        document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
       } else {
-        document.getElementById("opcoesPagamento").style.display = "none"; // Esconder as opções de pagamento se não houver excedente
-        document.getElementById("finalizarButton").disabled = false; // Habilitar sempre que não houver excedente
-        // Desabilitar as listas de seleção de pagamento e recebido por se não houver excedente
-        document.getElementById("pagamento").disabled = false;
-        document.getElementById("recebidoPor").disabled = false;
+        document.getElementById("opcoesPagamento").style.display = "none";
+        document.getElementById("finalizarButton").disabled = false;
       }
     }
 
-    
-function gerarQRCode() {
-  let usado = 0;
-  let itensSelecionados = [];
-  for (let item in precos) {
-    const qtd = parseInt(form[item].value || "0");
-    if (qtd > 0) {
-      usado += qtd * precos[item];
-      itensSelecionados.push(`${item} (${qtd})`);
-    }
-  }
-  const sobra = Math.max(0, credito - usado);
-  const dados = {
-    nome: nome,
-    req: req,
-    itens: itensSelecionados.join(", "),
-    usado: usado,
-    sobra: sobra
-  };
-
-  const formData = new FormData();
-  for (const key in dados) {
-    formData.append(key, dados[key]);
-  }
-
-  fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
-    method: "POST",
-    mode: "no-cors",
-    body: formData
-  }).then(() => {
-    window.location.href = "fila.html";
-  }).catch(err => {
-    alert("Erro ao enviar cardápio");
-    console.error(err);
-  });
-}
-      // Verificação se o pagamento foi confirmado antes de gerar o QR Code
+    function enviarCardapio() {
       if (!isPagoConfirmado) {
         alert("Favor confirmar o recebimento.");
         return;
@@ -212,6 +161,7 @@ function gerarQRCode() {
           itensSelecionados.push(`${item} (${qtd})`);
         }
       }
+
       const sobra = Math.max(0, credito - usado);
       const dados = {
         nome: nome,
@@ -220,23 +170,30 @@ function gerarQRCode() {
         usado: usado,
         sobra: sobra
       };
-      const url = new URL("qrcode.html", window.location.href);
-      for (let key in dados) {
-        url.searchParams.set(key, dados[key]);
+
+      const formData = new FormData();
+      for (const key in dados) {
+        formData.append(key, dados[key]);
       }
-      window.open(url.toString(), "_blank");
+
+      fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      }).then(() => {
+        window.location.href = "fila.html";
+      }).catch(err => {
+        alert("Erro ao enviar cardápio");
+        console.error(err);
+      });
     }
 
-    // Função para controlar o toggle
     document.getElementById("paymentToggle").addEventListener("click", function() {
       const toggleSwitch = document.getElementById("toggleSwitch");
-      // Alterar a cor e posição do toggle (efetuar mudança visual)
       isPagoConfirmado = !isPagoConfirmado;
       toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
       toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
-
-      // Atualizar o estado do botão de "Gerar QR Code"
-      document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+      calcular();
     });
 
     form.addEventListener("input", calcular);
