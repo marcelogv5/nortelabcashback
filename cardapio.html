@@ -1,43 +1,86 @@
-function enviarCardapio() {
-  if (!isPagoConfirmado) {
-    alert("Favor confirmar o recebimento.");
-    return;
-  }
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const nome = params.get("nome");
+  const req = params.get("req");
+  const valor = parseFloat(params.get("valor").replace(",", "."));
+  const credito = valor < 160 ? 4 : 8;
 
-  let usado = 0;
-  let itensSelecionados = [];
-  for (let item in precos) {
-    const qtd = parseInt(form[item].value || "0");
-    if (qtd > 0) {
-      usado += qtd * precos[item];
-      itensSelecionados.push(`${item} (${qtd})`);
+  document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+
+  const form = document.getElementById("cardapioForm");
+  const resumo = document.getElementById("resumo");
+
+  const precos = {
+    "Torrada": 2,
+    "Bolo": 2,
+    "Gelatina": 2,
+    "Iogurte": 8,
+    "Café com açúcar": 2,
+    "Café sem açúcar": 2,
+    "Chá do dia": 2
+  };
+
+  let isPagoConfirmado = false;
+
+  function calcular() {
+    let total = 0;
+    for (let item in precos) {
+      const qtd = parseInt(form[item].value || "0");
+      total += qtd * precos[item];
+    }
+    const saldo = credito - total;
+    resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
+
+    if (saldo < 0) {
+      resumo.innerHTML += `<br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}`;
+      document.getElementById("opcoesPagamento").style.display = "block";
+      document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
+    } else {
+      document.getElementById("opcoesPagamento").style.display = "none";
+      document.getElementById("finalizarButton").disabled = false;
     }
   }
 
-  const sobra = Math.max(0, credito - usado);
-  const dados = {
-    nome: nome,
-    req: req,
-    itens: itensSelecionados.join(", "),
-    usado: usado,
-    sobra: sobra,
-    pagamento: document.getElementById("pagamento").value || "",
-    recebidoPor: document.getElementById("recebidoPor").value || ""
-  };
+  function enviarCardapio() {
+    if (!isPagoConfirmado) {
+      alert("Favor confirmar o recebimento.");
+      return;
+    }
 
-  const formData = new FormData();
-  for (const key in dados) {
-    formData.append(key, dados[key]);
+    let usado = 0;
+    let itensSelecionados = [];
+    for (let item in precos) {
+      const qtd = parseInt(form[item].value || "0");
+      if (qtd > 0) {
+        usado += qtd * precos[item];
+        itensSelecionados.push(`${item} (${qtd})`);
+      }
+    }
+
+    const sobra = Math.max(0, credito - usado);
+    const dados = {
+      nome: nome,
+      req: req,
+      itens: itensSelecionados.join(", "),
+      usado: usado,
+      sobra: sobra,
+      pagamento: document.getElementById("pagamento").value || "",
+      recebidoPor: document.getElementById("recebidoPor").value || ""
+    };
+
+    // Armazenar dados localmente e ir para fila
+    localStorage.setItem("pedido_temp", JSON.stringify(dados));
+    window.location.href = "fila.html";
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbynLSiRnLR6KXI9VeWXvi-1P4ktZDuMcAlZmMunpilN0dlnKh7eaaRwAyvEFWI7fdM/exec", {
-    method: "POST",
-    mode: "no-cors",
-    body: formData
-  }).then(() => {
-    window.location.href = "index.html"; // volta para página inicial
-  }).catch(err => {
-    alert("Erro ao enviar cardápio");
-    console.error(err);
+  document.getElementById("paymentToggle").addEventListener("click", function() {
+    const toggleSwitch = document.getElementById("toggleSwitch");
+    isPagoConfirmado = !isPagoConfirmado;
+    toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+    toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
+    calcular();
   });
-}
+
+  form.addEventListener("input", calcular);
+  calcular();
+</script>
