@@ -106,10 +106,7 @@
     const valorParam = params.get("valor");
     const credito = valorParam ? (parseFloat(valorParam.replace(",", ".")) < 160 ? 4 : 8) : 0;
 
-    const boasVindasElem = document.getElementById("boasVindas");
-    if (boasVindasElem) {
-      boasVindasElem.innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
-    }
+    document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
     const form = document.getElementById("cardapioForm");
     const resumo = document.getElementById("resumo");
@@ -163,23 +160,23 @@
 
       const excedente = Math.max(0, usado - credito);
 
-const dados = {
-  nome: nome,
-  req: req,
-  itens: itensSelecionados.join(", "),
-  usado: Math.min(usado, credito),
-  sobra: Math.max(0, credito - usado),
-  valor_excedente_pago: Math.max(usado - credito, 0),
-  pagamento: document.getElementById("pagamento").value || "",
-  recebidoPor: document.getElementById("recebidoPor").value || "",
-  credito: credito  // ✅ necessário para o cartão calcular corretamente
-};
+      const dados = new FormData();
+      dados.append("nome", nome);
+      dados.append("req", req);
+      dados.append("itens", itensSelecionados.join(", "));
+      dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+      dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+      dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+      dados.append("pagamento", document.getElementById("pagamento").value || "");
+      dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
-
-
-
-      localStorage.setItem("pedido_temp", JSON.stringify(dados));
-      window.location.href = "index.html";
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: dados
+      }).then(() => {
+        alert("✅ Pedido enviado para a Fila!");
+        window.location.href = "index.html";
+      });
     }
 
     document.getElementById("paymentToggle").addEventListener("click", function() {
