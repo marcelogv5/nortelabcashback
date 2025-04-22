@@ -104,10 +104,7 @@
             return {
               nome,
               req,
-              itens: gerarItensString({
-                torrada, bolo, gelatina, iogurte,
-                cafeSemAcucar, cafeComAcucar, chaDoDia
-              }),
+              itens: gerarItensString({ torrada, bolo, gelatina, iogurte, cafeSemAcucar, cafeComAcucar, chaDoDia }),
               usado,
               sobra,
               pagamento,
@@ -136,6 +133,10 @@
       const pagamento = div.querySelector("p:nth-child(6)").innerText.split(": ")[1];
       const recebidoPor = div.querySelector("p:nth-child(7)").innerText.split(": ")[1];
 
+      const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+      const p = fila[index] || {};
+      const credito = parseFloat(p.credito || 4);
+
       const form = new FormData();
       form.append("nome", nome);
       form.append("req", req);
@@ -152,18 +153,15 @@
         }
       });
 
-      form.append("Torrada", mapa["Torrada"]);
-      form.append("Bolo", mapa["Bolo"]);
-      form.append("Gelatina", mapa["Gelatina"]);
-      form.append("Iogurte", mapa["Iogurte"]);
-      form.append("Café sem açúcar", mapa["Café sem açúcar"]);
-      form.append("Café com açúcar", mapa["Café com açúcar"]);
-      form.append("Chá do dia", mapa["Chá do dia"]);
+      for (const item in mapa) {
+        form.append(item, mapa[item]);
+      }
+
       form.append("usado", "R$" + usado.toFixed(2).replace(".", ","));
       form.append("sobra", "R$" + sobra.toFixed(2).replace(".", ","));
       form.append("pagamento", pagamento);
       form.append("recebidoPor", recebidoPor);
-      form.append("valor_excedente_pago", usado > 4 ? "R$ " + (usado - 4).toFixed(2).replace(".", ",") : "R$ 0,00");
+      form.append("valor_excedente_pago", usado > credito ? "R$ " + (usado - credito).toFixed(2).replace(".", ",") : "R$ 0,00");
 
       const agora = new Date();
       const expira = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
@@ -176,7 +174,6 @@
       });
 
       if (isLocal) {
-        let fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
         fila.splice(index, 1);
         localStorage.setItem("pedidos_fila", JSON.stringify(fila));
       }
