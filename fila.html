@@ -46,20 +46,22 @@
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKLFKHKyqQgdvwG9H9SbVdE45Mz54cEZVX3tVZucCFFk_UmQCL8PYQlRtx_pKGG1bAZpREOYTjDNWb/pub?output=csv";
 
     function criarCard(p, index, fromLocal) {
-      const div = document.createElement("div");
-      div.className = "pedido";
-      div.innerHTML = `
-        <h3>${p.nome}</h3>
-        <p><strong>Requisição:</strong> ${p.req}</p>
-        <p><strong>Itens selecionados:</strong> ${p.itens}</p>
-        <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
-        <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-        <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
-        <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-        <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
-      `;
-      return div;
-    }
+  const div = document.createElement("div");
+  div.className = "pedido";
+  div.innerHTML = `
+    <h3>${p.nome}</h3>
+    <p><strong>Requisição:</strong> ${p.req}</p>
+    <p><strong>Itens selecionados:</strong> ${p.itens}</p>
+    <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
+    <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
+    <p><strong>Excedente pago:</strong> R$ ${parseFloat(p.excedente || 0).toFixed(2).replace(".", ",")}</p>
+    <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
+    <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
+    <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
+  `;
+  return div;
+}
+
 
     function carregarFila() {
       const container = document.getElementById("filaContainer");
