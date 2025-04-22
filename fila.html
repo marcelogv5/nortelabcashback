@@ -44,21 +44,21 @@
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
-    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?output=csv";
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1471821715&single=true&output=csv";
 
-    function criarCard(pedido, index) {
+    function criarCard(pedido) {
       const div = document.createElement("div");
       div.className = "pedido";
       div.innerHTML = `
         <h3>${pedido.nome}</h3>
         <p><strong>Requisição:</strong> ${pedido.req}</p>
         <p><strong>Itens selecionados:</strong> ${pedido.itens}</p>
-        <p><strong>Valor utilizado da cortesia:</strong> R$ ${pedido.usado}</p>
-        <p><strong>Sobra da cortesia:</strong> R$ ${pedido.sobra}</p>
-        <p><strong>Excedente pago:</strong> R$ ${pedido.valor_excedente_pago}</p>
+        <p><strong>Valor utilizado da cortesia:</strong> ${pedido.usado}</p>
+        <p><strong>Sobra da cortesia:</strong> ${pedido.sobra}</p>
+        <p><strong>Excedente pago:</strong> ${pedido.valor_excedente_pago}</p>
         <p><strong>Forma de pagamento:</strong> ${pedido.pagamento}</p>
         <p><strong>Recebido por:</strong> ${pedido.recebidoPor}</p>
-        <button onclick="confirmarEntrega(this, ${index})">Pedido Atendido</button>
+        <button onclick="confirmarEntrega('${pedido.req}')">Pedido Atendido</button>
       `;
       return div;
     }
@@ -67,70 +67,31 @@
       const container = document.getElementById("filaContainer");
       container.innerHTML = "";
 
-      let fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
-
-      fila.forEach((pedido, index) => {
-        const card = criarCard(pedido, index);
-        container.appendChild(card);
-      });
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n").slice(1);
+          linhas.forEach((linha) => {
+            const [dataHora, nome, req, itens, usado, sobra, expira, pagamento, recebidoPor, valor_excedente_pago] = linha.split(",");
+            const pedido = { nome, req, itens, usado, sobra, expira, pagamento, recebidoPor, valor_excedente_pago };
+            const card = criarCard(pedido);
+            container.appendChild(card);
+          });
+        });
     }
 
-    function confirmarEntrega(botao, index) {
-      const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
-      const pedido = fila[index];
-
+    function confirmarEntrega(req) {
       const form = new FormData();
-      form.append("nome", pedido.nome);
-      form.append("req", pedido.req);
-
-      const mapa = {
-        "Torrada": 0, "Bolo": 0, "Gelatina": 0, "Iogurte": 0,
-        "Café com açúcar": 0, "Café sem açúcar": 0, "Chá do dia": 0
-      };
-
-      pedido.itens.split(", ").forEach(el => {
-        const match = el.match(/^(.*?) \((\d+)\)$/);
-        if (match && mapa.hasOwnProperty(match[1])) {
-          mapa[match[1]] = match[2];
-        }
-      });
-
-      for (const item in mapa) {
-        form.append(item, mapa[item]);
-      }
-
-      form.append("usado", "R$ " + parseFloat(pedido.usado).toFixed(2).replace(".", ","));
-      form.append("sobra", "R$ " + parseFloat(pedido.sobra).toFixed(2).replace(".", ","));
-      form.append("pagamento", pedido.pagamento);
-      form.append("recebidoPor", pedido.recebidoPor);
-      form.append("valor_excedente_pago", "R$ " + parseFloat(pedido.valor_excedente_pago).toFixed(2).replace(".", ","));
-
-      const expira = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      form.append("expira", expira.toLocaleString("pt-BR"));
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
-        mode: "no-cors",
         body: form
-      })
-      .then(() => {
-        alert("✅ Pedido enviado com sucesso para a planilha!");
-        fila.splice(index, 1);
-        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+      }).then(() => {
+        alert("✅ Pedido atendido e removido da fila!");
         location.reload();
-      })
-      .catch((err) => {
-        alert("❌ Falha ao enviar para a planilha: " + err.message);
       });
-    }
-
-    // Ao entrar na página, checar se há novo pedido pendente
-    const temp = localStorage.getItem("pedido_temp");
-    if (temp) {
-      const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
-      fila.push(JSON.parse(temp));
-      localStorage.setItem("pedidos_fila", JSON.stringify(fila));
-      localStorage.removeItem("pedido_temp");
     }
   </script>
 </body>
