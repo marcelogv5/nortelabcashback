@@ -169,10 +169,12 @@ const dados = {
   itens: itensSelecionados.join(", "),
   usado: Math.min(usado, credito),
   sobra: Math.max(0, credito - usado),
-  valor_excedente_pago: Math.max(usado - credito, 0), // <-- nome ajustado aqui
+  valor_excedente_pago: Math.max(usado - credito, 0),
   pagamento: document.getElementById("pagamento").value || "",
-  recebidoPor: document.getElementById("recebidoPor").value || ""
+  recebidoPor: document.getElementById("recebidoPor").value || "",
+  credito: credito  // ✅ necessário para o cartão calcular corretamente
 };
+
 
 
 
