@@ -65,17 +65,13 @@
     function criarCard(p, index, fromLocal) {
       const div = document.createElement("div");
       div.className = "pedido";
-      const excedenteCalculado = p.valor_excedente_pago
-        ? parseFloat(p.valor_excedente_pago.replace("R$", "").replace(",", "."))
-        : (p.usado && p.credito ? Math.max(parseFloat(p.usado) - parseFloat(p.credito), 0) : 0);
-
       div.innerHTML = `
         <h3>${p.nome}</h3>
         <p><strong>Requisição:</strong> ${p.req}</p>
         <p><strong>Itens selecionados:</strong> ${p.itens}</p>
         <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
         <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-        <p><strong>Excedente pago:</strong> R$ ${excedenteCalculado.toFixed(2).replace(".", ",")}</p>
+        <p><strong>Excedente pago:</strong> R$ ${parseFloat(p.valor_excedente_pago || 0).toFixed(2).replace(".", ",")}</p>
         <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
         <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
         <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
@@ -132,7 +128,13 @@
     }
 
     function salvarNovoPedidoSeExistir() {
-      // permanece igual
+      const pedidoTemp = localStorage.getItem("pedido_temp");
+      if (pedidoTemp) {
+        const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+        fila.push(JSON.parse(pedidoTemp));
+        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+        localStorage.removeItem("pedido_temp");
+      }
     }
 
     salvarNovoPedidoSeExistir();
