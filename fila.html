@@ -39,29 +39,45 @@
 </head>
 <body>
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
-  <h1>Fila de Pedidos</h1><button onclick="location.reload()" style="margin-bottom:20px;padding:10px 20px;background:#1976d2;color:white;border:none;border-radius:5px;font-size:16px;cursor:pointer;">🔄 Atualizar Página</button>
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()" style="margin-bottom:20px;padding:10px 20px;background:#1976d2;color:white;border:none;border-radius:5px;font-size:16px;cursor:pointer;">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKLFKHKyqQgdvwG9H9SbVdE45Mz54cEZVX3tVZucCFFk_UmQCL8PYQlRtx_pKGG1bAZpREOYTjDNWb/pub?output=csv";
 
-    function criarCard(p, index, fromLocal) {
-  const div = document.createElement("div");
-  div.className = "pedido";
-  div.innerHTML = `
-    <h3>${p.nome}</h3>
-    <p><strong>Requisição:</strong> ${p.req}</p>
-    <p><strong>Itens selecionados:</strong> ${p.itens}</p>
-    <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
-    <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
-    <p><strong>Excedente pago:</strong> R$ ${parseFloat(p.excedente || 0).toFixed(2).replace(".", ",")}</p>
-    <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
-    <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-    <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
-  `;
-  return div;
-}
+    function gerarItensString(itens) {
+      const mapaNomes = {
+        torrada: "Torrada",
+        bolo: "Bolo",
+        gelatina: "Gelatina",
+        iogurte: "Iogurte",
+        cafeSemAcucar: "Café sem açúcar",
+        cafeComAcucar: "Café com açúcar",
+        chaDoDia: "Chá do dia"
+      };
+      return Object.entries(itens)
+        .filter(([_, val]) => parseInt(val) > 0)
+        .map(([key, val]) => `${mapaNomes[key]} (${val})`)
+        .join(", ");
+    }
 
+    function criarCard(p, index, fromLocal) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${p.nome}</h3>
+        <p><strong>Requisição:</strong> ${p.req}</p>
+        <p><strong>Itens selecionados:</strong> ${p.itens}</p>
+        <p><strong>Valor utilizado da cortesia:</strong> R$ ${parseFloat(p.usado).toFixed(2).replace(".", ",")}</p>
+        <p><strong>Sobra da cortesia:</strong> R$ ${parseFloat(p.sobra).toFixed(2).replace(".", ",")}</p>
+        <p><strong>Excedente pago:</strong> R$ ${parseFloat(p.valor_excedente_pago?.replace?.("R$", "").replace(",", ".") || 0).toFixed(2).replace(".", ",")}</p>
+        <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
+        <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
+        <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
+      `;
+      return div;
+    }
 
     function carregarFila() {
       const container = document.getElementById("filaContainer");
@@ -79,8 +95,25 @@
         .then(text => {
           const linhas = text.split("\n").slice(1);
           const filaPlanilha = linhas.map(l => l.trim()).filter(l => l).map(l => {
-            const [nome, req, itens, usado, sobra, pagamento, recebidoPor] = l.split(",");
-            return { nome, req, itens, usado, sobra, pagamento, recebidoPor };
+            const [
+              dataHora, nome, req, torrada, bolo, gelatina, iogurte,
+              cafeSemAcucar, cafeComAcucar, chaDoDia, usado, sobra,
+              expira, pagamento, recebidoPor, valor_excedente_pago
+            ] = l.split(",");
+
+            return {
+              nome,
+              req,
+              itens: gerarItensString({
+                torrada, bolo, gelatina, iogurte,
+                cafeSemAcucar, cafeComAcucar, chaDoDia
+              }),
+              usado,
+              sobra,
+              pagamento,
+              recebidoPor,
+              valor_excedente_pago
+            };
           });
 
           filaPlanilha.forEach(p => {
@@ -106,6 +139,7 @@
       const form = new FormData();
       form.append("nome", nome);
       form.append("req", req);
+
       const lista = itens.split(", ");
       const mapa = {
         "Torrada": 0, "Bolo": 0, "Gelatina": 0, "Iogurte": 0,
@@ -117,6 +151,7 @@
           mapa[match[1]] = match[2];
         }
       });
+
       form.append("Torrada", mapa["Torrada"]);
       form.append("Bolo", mapa["Bolo"]);
       form.append("Gelatina", mapa["Gelatina"]);
@@ -126,12 +161,13 @@
       form.append("Chá do dia", mapa["Chá do dia"]);
       form.append("usado", "R$" + usado.toFixed(2).replace(".", ","));
       form.append("sobra", "R$" + sobra.toFixed(2).replace(".", ","));
+      form.append("pagamento", pagamento);
+      form.append("recebidoPor", recebidoPor);
+      form.append("valor_excedente_pago", usado > 4 ? "R$ " + (usado - 4).toFixed(2).replace(".", ",") : "R$ 0,00");
+
       const agora = new Date();
       const expira = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
       form.append("expira", expira.toLocaleString("pt-BR"));
-      form.append("pagamento", pagamento);
-      form.append("recebidoPor", recebidoPor);
-      form.append("valor_excedente_pago", usado > 8 ? "R$ " + (usado - 8).toFixed(2).replace(".", ",") : "R$ 0,00");
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
