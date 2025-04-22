@@ -48,17 +48,17 @@
 
     function gerarItensString(itens) {
       const mapaNomes = {
-        torrada: "Torrada",
-        bolo: "Bolo",
-        gelatina: "Gelatina",
-        iogurte: "Iogurte",
-        cafeSemAcucar: "Café sem açúcar",
-        cafeComAcucar: "Café com açúcar",
-        chaDoDia: "Chá do dia"
+        "Torrada": "Torrada",
+        "Bolo": "Bolo",
+        "Gelatina": "Gelatina",
+        "Iogurte": "Iogurte",
+        "Café com açúcar": "Café com açúcar",
+        "Café sem açúcar": "Café sem açúcar",
+        "Chá do dia": "Chá do dia"
       };
       return Object.entries(itens)
         .filter(([_, val]) => parseInt(val) > 0)
-        .map(([key, val]) => `${mapaNomes[key]} (${val})`)
+        .map(([key, val]) => `${mapaNomes[key] || key} (${val})`)
         .join(", ");
     }
 
@@ -104,7 +104,15 @@
             return {
               nome,
               req,
-              itens: gerarItensString({ torrada, bolo, gelatina, iogurte, cafeSemAcucar, cafeComAcucar, chaDoDia }),
+              itens: gerarItensString({
+                "Torrada": torrada,
+                "Bolo": bolo,
+                "Gelatina": gelatina,
+                "Iogurte": iogurte,
+                "Café com açúcar": cafeComAcucar,
+                "Café sem açúcar": cafeSemAcucar,
+                "Chá do dia": chaDoDia
+              }),
               usado,
               sobra,
               pagamento,
