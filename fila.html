@@ -108,16 +108,20 @@
       const expira = new Date(Date.now() + 24 * 60 * 60 * 1000);
       form.append("expira", expira.toLocaleString("pt-BR"));
 
-      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
         mode: "no-cors",
         body: form
-      });
+      })
+      .then(() => {
+        alert("✅ Pedido enviado com sucesso para a planilha!");
+        fila.splice(index, 1);
+        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+        location.reload();
+      })
+      .catch((err) => {
+        alert("❌ Fal
 
-      fila.splice(index, 1);
-      localStorage.setItem("pedidos_fila", JSON.stringify(fila));
-      location.reload();
-    }
 
     // Ao entrar na página, checar se há novo pedido pendente
     const temp = localStorage.getItem("pedido_temp");
