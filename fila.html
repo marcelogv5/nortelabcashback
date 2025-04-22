@@ -124,22 +124,58 @@
     }
 
     function confirmarEntrega(botao, isLocal, index) {
-      // permanece igual
-    }
+  const div = botao.parentElement;
+  const nome = div.querySelector("h3").innerText;
+  const req = div.querySelector("p:nth-child(2)").innerText.split(": ")[1];
+  const itens = div.querySelector("p:nth-child(3)").innerText.split(": ")[1];
+  const usado = parseFloat(div.querySelector("p:nth-child(4)").innerText.split("R$ ")[1].replace(",", "."));
+  const sobra = parseFloat(div.querySelector("p:nth-child(5)").innerText.split("R$ ")[1].replace(",", "."));
+  const excedente = parseFloat(div.querySelector("p:nth-child(6)").innerText.split("R$ ")[1].replace(",", "."));
+  const pagamento = div.querySelector("p:nth-child(7)").innerText.split(": ")[1];
+  const recebidoPor = div.querySelector("p:nth-child(8)").innerText.split(": ")[1];
 
-    function salvarNovoPedidoSeExistir() {
-      const pedidoTemp = localStorage.getItem("pedido_temp");
-      if (pedidoTemp) {
-        const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
-        fila.push(JSON.parse(pedidoTemp));
-        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
-        localStorage.removeItem("pedido_temp");
-      }
-    }
+  const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
 
-    salvarNovoPedidoSeExistir();
-    carregarFila();
-    setInterval(carregarFila, 30000);
-  </script>
-</body>
-</html>
+  const form = new FormData();
+  form.append("nome", nome);
+  form.append("req", req);
+
+  const lista = itens.split(", ");
+  const mapa = {
+    "Torrada": 0, "Bolo": 0, "Gelatina": 0, "Iogurte": 0,
+    "Café sem açúcar": 0, "Café com açúcar": 0, "Chá do dia": 0
+  };
+  lista.forEach(el => {
+    const match = el.match(/^(.*?)\s*\((\d+)\)$/);
+    if (match && mapa.hasOwnProperty(match[1])) {
+      mapa[match[1]] = match[2];
+    }
+  });
+
+  for (const item in mapa) {
+    form.append(item, mapa[item]);
+  }
+
+  form.append("usado", "R$" + usado.toFixed(2).replace(".", ","));
+  form.append("sobra", "R$" + sobra.toFixed(2).replace(".", ","));
+  form.append("pagamento", pagamento);           // ✅ forma de pagamento correta
+  form.append("recebidoPor", recebidoPor);       // ✅ nome de quem recebeu
+  form.append("valor_excedente_pago", "R$ " + excedente.toFixed(2).replace(".", ","));  // ✅ valor correto
+
+  const agora = new Date();
+  const expira = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
+  form.append("expira", expira.toLocaleString("pt-BR"));
+
+  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+    method: "POST",
+    mode: "no-cors",
+    body: form
+  });
+
+  if (isLocal) {
+    fila.splice(index, 1);
+    localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+  }
+
+  div.remove();
+}
