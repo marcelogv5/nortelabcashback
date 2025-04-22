@@ -46,35 +46,19 @@
   <script>
     const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?output=csv";
 
-    function gerarItensString(itens) {
-      const mapaNomes = {
-        "Torrada": "Torrada",
-        "Bolo": "Bolo",
-        "Gelatina": "Gelatina",
-        "Iogurte": "Iogurte",
-        "Café com açúcar": "Café com açúcar",
-        "Café sem açúcar": "Café sem açúcar",
-        "Chá do dia": "Chá do dia"
-      };
-      return Object.entries(itens)
-        .filter(([_, val]) => parseInt(val) > 0)
-        .map(([key, val]) => `${mapaNomes[key] || key} (${val})`)
-        .join(", ");
-    }
-
-    function criarCard(p, index, fromLocal) {
+    function criarCard(pedido, index) {
       const div = document.createElement("div");
       div.className = "pedido";
       div.innerHTML = `
-        <h3>${p.nome}</h3>
-        <p><strong>Requisição:</strong> ${p.req}</p>
-        <p><strong>Itens selecionados:</strong> ${p.itens}</p>
-        <p><strong>Valor utilizado da cortesia:</strong> ${p.usado}</p>
-        <p><strong>Sobra da cortesia:</strong> ${p.sobra}</p>
-        <p><strong>Excedente pago:</strong> ${p.valor_excedente_pago || "R$ 0,00"}</p>
-        <p><strong>Forma de pagamento:</strong> ${p.pagamento || "-"}</p>
-        <p><strong>Recebido por:</strong> ${p.recebidoPor || "-"}</p>
-        <button onclick="confirmarEntrega(this, ${fromLocal}, ${index})">Pedido Atendido</button>
+        <h3>${pedido.nome}</h3>
+        <p><strong>Requisição:</strong> ${pedido.req}</p>
+        <p><strong>Itens selecionados:</strong> ${pedido.itens}</p>
+        <p><strong>Valor utilizado da cortesia:</strong> R$ ${pedido.usado}</p>
+        <p><strong>Sobra da cortesia:</strong> R$ ${pedido.sobra}</p>
+        <p><strong>Excedente pago:</strong> R$ ${pedido.valor_excedente_pago}</p>
+        <p><strong>Forma de pagamento:</strong> ${pedido.pagamento}</p>
+        <p><strong>Recebido por:</strong> ${pedido.recebidoPor}</p>
+        <button onclick="confirmarEntrega(this, ${index})">Pedido Atendido</button>
       `;
       return div;
     }
@@ -83,78 +67,29 @@
       const container = document.getElementById("filaContainer");
       container.innerHTML = "";
 
-      let filaLocal = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+      let fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
 
-      filaLocal.forEach((p, index) => {
-        const div = criarCard(p, index, true);
-        container.appendChild(div);
+      fila.forEach((pedido, index) => {
+        const card = criarCard(pedido, index);
+        container.appendChild(card);
       });
-
-      fetch(urlCsv)
-        .then(res => res.text())
-        .then(text => {
-          const linhas = text.split("\n").slice(1);
-          const filaPlanilha = linhas.map(l => l.trim()).filter(l => l).map(l => {
-            const [
-              dataHora, nome, req, torrada, bolo, gelatina, iogurte,
-              cafeSemAcucar, cafeComAcucar, chaDoDia, usado, sobra,
-              expira, pagamento, recebidoPor, valor_excedente_pago
-            ] = l.split(",");
-
-            return {
-              nome,
-              req,
-              itens: gerarItensString({
-                "Torrada": torrada,
-                "Bolo": bolo,
-                "Gelatina": gelatina,
-                "Iogurte": iogurte,
-                "Café com açúcar": cafeComAcucar,
-                "Café sem açúcar": cafeSemAcucar,
-                "Chá do dia": chaDoDia
-              }),
-              usado,
-              sobra,
-              pagamento,
-              recebidoPor,
-              valor_excedente_pago
-            };
-          });
-
-          filaPlanilha.forEach(p => {
-            const div = criarCard(p, 0, false);
-            container.appendChild(div);
-          });
-        })
-        .catch(() => {
-          container.innerHTML += "<p>Erro ao carregar planilha.</p>";
-        });
     }
 
-    function confirmarEntrega(botao, isLocal, index) {
-      const div = botao.parentElement;
-      const nome = div.querySelector("h3").innerText;
-      const req = div.querySelector("p:nth-child(2)").innerText.split(": ")[1];
-      const itens = div.querySelector("p:nth-child(3)").innerText.split(": ")[1];
-      const usado = div.querySelector("p:nth-child(4)").innerText.split(": ")[1];
-      const sobra = div.querySelector("p:nth-child(5)").innerText.split(": ")[1];
-      const excedente = div.querySelector("p:nth-child(6)").innerText.split(": ")[1];
-      const pagamento = div.querySelector("p:nth-child(7)").innerText.split(": ")[1];
-      const recebidoPor = div.querySelector("p:nth-child(8)").innerText.split(": ")[1];
-
+    function confirmarEntrega(botao, index) {
       const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+      const pedido = fila[index];
 
       const form = new FormData();
-      form.append("nome", nome);
-      form.append("req", req);
+      form.append("nome", pedido.nome);
+      form.append("req", pedido.req);
 
-      const lista = itens.split(", ");
       const mapa = {
         "Torrada": 0, "Bolo": 0, "Gelatina": 0, "Iogurte": 0,
-        "Café sem açúcar": 0, "Café com açúcar": 0, "Chá do dia": 0
+        "Café com açúcar": 0, "Café sem açúcar": 0, "Chá do dia": 0
       };
-      lista.forEach(el => {
-        const match = el.match(/^(.*?)\s*\((\d+)\)$/);
+
+      pedido.itens.split(", ").forEach(el => {
+        const match = el.match(/^(.*?) \((\d+)\)$/);
         if (match && mapa.hasOwnProperty(match[1])) {
           mapa[match[1]] = match[2];
         }
@@ -164,14 +99,13 @@
         form.append(item, mapa[item]);
       }
 
-      form.append("usado", usado);
-      form.append("sobra", sobra);
-      form.append("pagamento", pagamento);
-      form.append("recebidoPor", recebidoPor);
-      form.append("valor_excedente_pago", excedente);
+      form.append("usado", "R$ " + parseFloat(pedido.usado).toFixed(2).replace(".", ","));
+      form.append("sobra", "R$ " + parseFloat(pedido.sobra).toFixed(2).replace(".", ","));
+      form.append("pagamento", pedido.pagamento);
+      form.append("recebidoPor", pedido.recebidoPor);
+      form.append("valor_excedente_pago", "R$ " + parseFloat(pedido.valor_excedente_pago).toFixed(2).replace(".", ","));
 
-      const agora = new Date();
-      const expira = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
+      const expira = new Date(Date.now() + 24 * 60 * 60 * 1000);
       form.append("expira", expira.toLocaleString("pt-BR"));
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
@@ -180,12 +114,18 @@
         body: form
       });
 
-      if (isLocal) {
-        fila.splice(index, 1);
-        localStorage.setItem("pedidos_fila", JSON.stringify(fila));
-      }
+      fila.splice(index, 1);
+      localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+      location.reload();
+    }
 
-      div.remove();
+    // Ao entrar na página, checar se há novo pedido pendente
+    const temp = localStorage.getItem("pedido_temp");
+    if (temp) {
+      const fila = JSON.parse(localStorage.getItem("pedidos_fila")) || [];
+      fila.push(JSON.parse(temp));
+      localStorage.setItem("pedidos_fila", JSON.stringify(fila));
+      localStorage.removeItem("pedido_temp");
     }
   </script>
 </body>
