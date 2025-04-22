@@ -161,16 +161,19 @@
         }
       }
 
-      const sobra = Math.max(0, credito - usado);
-      const dados = {
-        nome: nome,
-        req: req,
-        itens: itensSelecionados.join(", "),
-        usado: usado,
-        sobra: sobra,
-        pagamento: document.getElementById("pagamento").value || "",
-        recebidoPor: document.getElementById("recebidoPor").value || ""
-      };
+      const excedente = Math.max(0, usado - credito);
+
+const dados = {
+  nome: nome,
+  req: req,
+  itens: itensSelecionados.join(", "),
+  usado: Math.min(usado, credito),
+  sobra: Math.max(0, credito - usado),
+  excedente: excedente,
+  pagamento: document.getElementById("pagamento").value || "",
+  recebidoPor: document.getElementById("recebidoPor").value || ""
+};
+
 
       localStorage.setItem("pedido_temp", JSON.stringify(dados));
       window.location.href = "index.html";
