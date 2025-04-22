@@ -169,6 +169,7 @@
       dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
       dados.append("pagamento", document.getElementById("pagamento").value || "");
       dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+      dados.append("acao", "salvarNaFila"); // 👈 adiciona o identificador correto
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
