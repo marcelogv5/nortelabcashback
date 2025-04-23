@@ -1,3 +1,4 @@
+<!-- cardapio.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -57,9 +58,9 @@
     <form id="cardapioForm">
       <h3>Menu:</h3>
       <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo do Dia (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 2,00)</div>
       <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte com mel e granola (R$ 8,00)</div>
+      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 8,00)</div>
 
       <h3>Bebidas:</h3>
       <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 2,00)</div>
@@ -112,13 +113,8 @@
     const resumo = document.getElementById("resumo");
 
     const precos = {
-      "Torrada": 2,
-      "Bolo": 2,
-      "Gelatina": 2,
-      "Iogurte": 8,
-      "Café com açúcar": 2,
-      "Café sem açúcar": 2,
-      "Chá do dia": 2
+      "Torrada": 2, "Bolo": 2, "Gelatina": 2, "Iogurte": 8,
+      "Café com açúcar": 2, "Café sem açúcar": 2, "Chá do dia": 2
     };
 
     let isPagoConfirmado = false;
@@ -131,22 +127,19 @@
       }
       const saldo = credito - total;
       resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
-
-      if (saldo < 0) {
-        resumo.innerHTML += `<br><b>Excedente a pagar:</b> R$ ${Math.abs(saldo).toFixed(2).replace('.', ',')}`;
-        document.getElementById("opcoesPagamento").style.display = "block";
-        document.getElementById("finalizarButton").disabled = !isPagoConfirmado;
-      } else {
-        document.getElementById("opcoesPagamento").style.display = "none";
-        document.getElementById("finalizarButton").disabled = false;
-      }
+      document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
+      document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
     }
 
+    document.getElementById("paymentToggle").addEventListener("click", function() {
+      isPagoConfirmado = !isPagoConfirmado;
+      document.getElementById("toggleSwitch").style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+      document.getElementById("toggleSwitch").style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
+      calcular();
+    });
+
     function enviarCardapio() {
-      if (!isPagoConfirmado) {
-        alert("Favor confirmar o recebimento.");
-        return;
-      }
+      if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
       let usado = 0;
       let itensSelecionados = [];
@@ -161,6 +154,7 @@
       const excedente = Math.max(0, usado - credito);
 
       const dados = new FormData();
+      dados.append("acao", "salvarNaFila");
       dados.append("nome", nome);
       dados.append("req", req);
       dados.append("itens", itensSelecionados.join(", "));
@@ -169,7 +163,6 @@
       dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
       dados.append("pagamento", document.getElementById("pagamento").value || "");
       dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
-      dados.append("acao", "salvarNaFila"); // 👈 adiciona o identificador correto
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
@@ -179,14 +172,6 @@
         window.location.href = "index.html";
       });
     }
-
-    document.getElementById("paymentToggle").addEventListener("click", function() {
-      const toggleSwitch = document.getElementById("toggleSwitch");
-      isPagoConfirmado = !isPagoConfirmado;
-      toggleSwitch.style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
-      toggleSwitch.style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
-      calcular();
-    });
 
     form.addEventListener("input", calcular);
     calcular();
