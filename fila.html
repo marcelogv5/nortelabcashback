@@ -1,46 +1,20 @@
+<!-- fila.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Fila de Pedidos</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-      text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      margin: 0 auto 20px auto;
-      display: block;
-    }
-    .pedido {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #ccc;
-      padding: 15px;
-      margin: 15px auto;
-      max-width: 600px;
-      text-align: left;
-    }
-    .pedido h3 { margin-top: 0; }
-    .pedido button {
-      background: #2e7d32;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+    body { font-family: sans-serif; background: #f5f5f5; padding: 20px; text-align: center; }
+    .logo { max-width: 180px; margin: auto; display: block; }
+    .pedido { background: white; border-radius: 8px; box-shadow: 0 0 10px #ccc; padding: 15px; margin: 15px auto; max-width: 600px; text-align: left; }
+    .pedido button { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
   </style>
 </head>
 <body onload="carregarFila()">
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
-  <button onclick="location.reload()" style="margin-bottom:20px;padding:10px 20px;background:#1976d2;color:white;border:none;border-radius:5px;font-size:16px;cursor:pointer;">🔄 Atualizar Página</button>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
@@ -52,12 +26,10 @@
       div.innerHTML = `
         <h3>${pedido.nome}</h3>
         <p><strong>Requisição:</strong> ${pedido.req}</p>
-        <p><strong>Itens selecionados:</strong> ${pedido.itens}</p>
-        <p><strong>Valor utilizado da cortesia:</strong> ${pedido.usado}</p>
-        <p><strong>Sobra da cortesia:</strong> ${pedido.sobra}</p>
-        <p><strong>Excedente pago:</strong> ${pedido.valor_excedente_pago}</p>
-        <p><strong>Forma de pagamento:</strong> ${pedido.pagamento}</p>
-        <p><strong>Recebido por:</strong> ${pedido.recebidoPor}</p>
+        <p><strong>Torrada:</strong> ${pedido.Torrada} | <strong>Bolo:</strong> ${pedido.Bolo} | <strong>Gelatina:</strong> ${pedido.Gelatina}</p>
+        <p><strong>Iogurte:</strong> ${pedido.Iogurte} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido.usado} | <strong>Sobra:</strong> ${pedido.sobra} | <strong>Excedente:</strong> ${pedido.valor_excedente_pago}</p>
+        <p><strong>Pagamento:</strong> ${pedido.pagamento} | <strong>Recebido por:</strong> ${pedido.recebidoPor}</p>
         <button onclick="confirmarEntrega('${pedido.req}')">Pedido Atendido</button>
       `;
       return div;
@@ -71,22 +43,16 @@
         .then(res => res.text())
         .then(text => {
           const linhas = text.trim().split("\n").slice(1);
-          linhas.forEach((linha) => {
-            const cols = linha.split(",");
+          linhas.forEach(linha => {
+            const col = linha.split(",");
             const pedido = {
-              dataHora: cols[0],
-              nome: cols[1],
-              req: cols[2],
-              itens: cols[3],
-              usado: cols[4],
-              sobra: cols[5],
-              expira: cols[6],
-              pagamento: cols[7],
-              recebidoPor: cols[8],
-              valor_excedente_pago: cols[9]
+              dataHora: col[0], nome: col[1], req: col[2],
+              Torrada: col[3], Bolo: col[4], Gelatina: col[5], Iogurte: col[6],
+              "Café sem açúcar": col[7], "Café com açúcar": col[8], "Chá do dia": col[9],
+              usado: col[10], sobra: col[11], expira: col[12],
+              pagamento: col[13], recebidoPor: col[14], valor_excedente_pago: col[15]
             };
-            const card = criarCard(pedido);
-            container.appendChild(card);
+            container.appendChild(criarCard(pedido));
           });
         });
     }
@@ -100,7 +66,7 @@
         method: "POST",
         body: form
       }).then(() => {
-        alert("✅ Pedido atendido e movido para Registros!");
+        alert("✅ Pedido atendido!");
         location.reload();
       });
     }
