@@ -74,6 +74,7 @@
           linhas.forEach((linha) => {
             const cols = linha.split(",");
             const pedido = {
+              dataHora: cols[0],
               nome: cols[1],
               req: cols[2],
               itens: cols[3],
