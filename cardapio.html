@@ -163,7 +163,7 @@ function enviarCardapio() {
   dados.append("acao", "salvarNaFila");
   dados.append("nome", nome);
   dados.append("req", req);
-  dados.append("itens", itensSelecionados.join(", "));
+  dados.append("itens", ""); // ou apenas deixe vazio
   dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
   dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
   dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
