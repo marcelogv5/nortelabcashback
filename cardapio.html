@@ -160,7 +160,7 @@ function enviarCardapio() {
 
   const excedente = Math.max(0, usado - credito);
 
-  dados.append("acao", "registrarPedido");
+  dados.append("acao", "salvarNaFila");
   dados.append("nome", nome);
   dados.append("req", req);
   dados.append("itens", itensSelecionados.join(", "));
