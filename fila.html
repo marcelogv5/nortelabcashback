@@ -3,9 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: sans-serif; background: #f5f5f5; padding: 20px; text-align: center; }
-    .logo { max-width: 180px; margin: auto; display: block; }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
     .pedido {
       background: white;
       border-radius: 8px;
@@ -23,6 +33,12 @@
       border-radius: 4px;
       font-size: 16px;
       cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -43,7 +59,7 @@
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
         <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
         <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
-        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["valor_excedente_pago"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
         <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
         <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
       `;
@@ -58,19 +74,21 @@
         .then(res => res.text())
         .then(text => {
           const linhas = text.trim().split("\n");
-          const cabecalho = linhas[0].split(",").map(c => c.trim());
-
-          linhas.slice(1).forEach(linha => {
-            const colunas = linha.split(",");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
             const pedido = {};
-            cabecalho.forEach((chave, i) => {
-              pedido[chave] = colunas[i]?.trim() || "";
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
             });
 
-            if (pedido["Confirma_entrega"] !== "Sim") {
+            if (!pedido["Confirma_entrega"]) {
               container.appendChild(criarCard(pedido));
             }
-          });
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
         });
     }
 
@@ -85,6 +103,680 @@
       }).then(() => {
         alert("✅ Pedido atendido!");
         location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
+      });
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
+    }
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .pedido {
+        padding: 10px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body onload="carregarFila()">
+  <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
+  <h1>Fila de Pedidos</h1>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <div id="filaContainer">Carregando pedidos...</div>
+
+  <script>
+    const urlCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=1464686317&single=true&output=csv";
+
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <h3>${pedido["Nome"]}</h3>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
+
+    function carregarFila() {
+      const container = document.getElementById("filaContainer");
+      container.innerHTML = "";
+
+      fetch(urlCsv)
+        .then(res => res.text())
+        .then(text => {
+          const linhas = text.trim().split("\n");
+          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+          for (let i = 1; i < linhas.length; i++) {
+            const valores = linhas[i].split(",");
+            const pedido = {};
+            cabecalhos.forEach((coluna, idx) => {
+              pedido[coluna] = valores[idx]?.trim();
+            });
+
+            if (!pedido["Confirma_entrega"]) {
+              container.appendChild(criarCard(pedido));
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+        });
+    }
+
+    function confirmarEntrega(req) {
+      const form = new FormData();
+      form.append("acao", "removerDaFila");
+      form.append("req", req);
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      }).then(() => {
+        alert("✅ Pedido atendido!");
+        location.reload();
+      }).catch((err) => {
+        alert("❌ Erro ao confirmar entrega: " + err.message);
       });
     }
   </script>
