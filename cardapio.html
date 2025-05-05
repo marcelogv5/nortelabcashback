@@ -147,14 +147,12 @@ function enviarCardapio() {
 
   let usado = 0;
   const dados = new FormData();
-  let itensSelecionados = []; // ← REINCLUIR ESTA LINHA
 
   for (let item in precos) {
     const qtd = parseInt(form[item].value || "0");
-    dados.append(item, qtd);
+    dados.append(item, qtd); // envia apenas o número
     if (qtd > 0) {
       usado += qtd * precos[item];
-      itensSelecionados.push(`${item} (${qtd})`);
     }
   }
 
@@ -163,7 +161,7 @@ function enviarCardapio() {
   dados.append("acao", "salvarNaFila");
   dados.append("nome", nome);
   dados.append("req", req);
-  dados.append("itens", itensSelecionados.join(", "));
+  // ❌ Removido: dados.append("itens", itensSelecionados.join(", "));
   dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
   dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
   dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
