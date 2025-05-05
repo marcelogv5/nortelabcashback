@@ -91,7 +91,7 @@
 }
 
 
-   function confirmarEntrega(requisicao) {
+  function confirmarEntrega(requisicao) {
   const form = new FormData();
   form.append("acao", "confirmarEntrega");
   form.append("req", requisicao);
@@ -100,18 +100,19 @@
     method: "POST",
     body: form
   })
+  .then(resp => resp.text())
   .then(resp => {
-  alert(resp);
-  // Remover o card do DOM após marcar como entregue
- const button = document.querySelector(`button[onclick="confirmarEntrega('${requisicao}')"]`);
-const card = button.closest(".pedido");
-if (card) card.remove();
-
-
+    alert(resp);
+    // Remover o card do DOM após marcar como entregue
+    const button = document.querySelector(`button[onclick="confirmarEntrega('${requisicao}')"]`);
+    const card = button.closest(".pedido");
+    if (card) card.remove();
+  })
   .catch(error => {
     alert("Erro ao confirmar entrega: " + error.message);
   });
 }
+
 
   </script>
 </body>
