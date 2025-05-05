@@ -73,30 +73,43 @@
     }
 
     function criarCard(pedido) {
-      const div = document.createElement('div');
-      div.className = 'pedido';
-      div.innerHTML = `
-        <h3>${pedido["Nome"] || "Sem nome"}</h3>
-        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
-        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
-        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
-        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
-        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
-      `;
-      return div;
-    }
+  const div = document.createElement("div");
+  div.className = "pedido";
+  div.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>${pedido["Nome"]}</h3>
+      <span>${pedido["Data/Hora"]}</span>
+    </div>
+    <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+    <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+    <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+    <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["sobra"]} | <strong>Excedente:</strong> ${pedido["valor_excedente_pago"]}</p>
+    <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+    <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+  `;
+  return div;
+}
 
-    function confirmarEntrega(req) {
-      const form = new FormData();
-      form.append("acao", "confirmarEntrega");
-      form.append("req", req);
 
-      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-        method: "POST",
-        body: form
-      }).then(r => r.text()).then(() => location.reload());
-    }
+   function confirmarEntrega(requisicao) {
+  const form = new FormData();
+  form.append("acao", "confirmarEntrega");
+  form.append("req", requisicao);
+
+  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+    method: "POST",
+    body: form
+  })
+  .then(response => response.text())
+  .then(resp => {
+    alert("✅ Pedido atendido!");
+    location.reload();
+  })
+  .catch(error => {
+    alert("Erro ao confirmar entrega: " + error.message);
+  });
+}
+
   </script>
 </body>
 </html>
