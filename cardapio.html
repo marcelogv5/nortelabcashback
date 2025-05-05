@@ -120,10 +120,14 @@
 
     function calcular() {
       let total = 0;
-      for (let item in precos) {
-        const qtd = parseInt(form[item].value || "0");
-        total += qtd * precos[item];
-      }
+   const campos = ["Torrada", "Bolo", "Gelatina", "Iogurte", "Café sem açúcar", "Café com açúcar", "Chá do dia"];
+
+campos.forEach(item => {
+  const qtd = parseInt(form.elements.namedItem(item).value || "0");
+  dados.append(item, qtd);
+  if (qtd > 0) usado += qtd * precos[item];
+});
+
       const saldo = credito - total;
       resumo.innerHTML = `
   Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
