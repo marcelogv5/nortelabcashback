@@ -1,20 +1,63 @@
-<!-- fila.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fila de Pedidos</title>
   <style>
-    body { font-family: sans-serif; background: #f5f5f5; padding: 20px; text-align: center; }
-    .logo { max-width: 180px; margin: auto; display: block; }
-    .pedido { background: white; border-radius: 8px; box-shadow: 0 0 10px #ccc; padding: 15px; margin: 15px auto; max-width: 600px; text-align: left; }
-    .pedido button { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 180px;
+      margin: auto;
+      display: block;
+    }
+
+    .pedido {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 15px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 600px;
+      text-align: left;
+      word-wrap: break-word;
+    }
+
+    .pedido button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button.refresh {
+      background: #1565c0;
+      margin-top: 15px;
+      padding: 10px 20px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body onload="carregarFila()">
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
-  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <button class="refresh" onclick="location.reload()">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
@@ -30,7 +73,7 @@
         <p><strong>Iogurte:</strong> ${pedido.Iogurte} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
         <p><strong>Valor usado:</strong> ${pedido.usado} | <strong>Sobra:</strong> ${pedido.sobra} | <strong>Excedente:</strong> ${pedido.valor_excedente_pago}</p>
         <p><strong>Pagamento:</strong> ${pedido.pagamento} | <strong>Recebido por:</strong> ${pedido.recebidoPor}</p>
-        <button onclick="confirmarEntrega('${pedido.req}')">Pedido Atendido</button>
+        <button onclick="confirmarEntrega('${pedido.req}')">✅ Pedido Atendido</button>
       `;
       return div;
     }
@@ -42,24 +85,42 @@
       fetch(urlCsv)
         .then(res => res.text())
         .then(text => {
-          const linhas = text.trim().split("\n").slice(1);
-          linhas.forEach(linha => {
+          const linhas = text.trim().split("\n");
+          const cabecalho = linhas[0].split(",");
+
+          linhas.slice(1).forEach(linha => {
             const col = linha.split(",");
-            const pedido = {
-              dataHora: col[0], nome: col[1], req: col[2],
-              Torrada: col[3], Bolo: col[4], Gelatina: col[5], Iogurte: col[6],
-              "Café sem açúcar": col[7], "Café com açúcar": col[8], "Chá do dia": col[9],
-              usado: col[10], sobra: col[11], expira: col[12],
-              pagamento: col[13], recebidoPor: col[14], valor_excedente_pago: col[15]
-            };
-            container.appendChild(criarCard(pedido));
+            const pedido = {};
+
+            cabecalho.forEach((nome, i) => {
+              pedido[nome.trim()] = col[i]?.trim() || "";
+            });
+
+            if (pedido["Confirma_entrega"] !== "Sim") {
+              container.appendChild(criarCard({
+                nome: pedido["nome"],
+                req: pedido["req"],
+                Torrada: pedido["Torrada"],
+                Bolo: pedido["Bolo"],
+                Gelatina: pedido["Gelatina"],
+                Iogurte: pedido["Iogurte"],
+                "Café sem açúcar": pedido["Café sem açúcar"],
+                "Café com açúcar": pedido["Café com açúcar"],
+                "Chá do dia": pedido["Chá do dia"],
+                usado: pedido["usado"],
+                sobra: pedido["sobra"],
+                valor_excedente_pago: pedido["valor_excedente_pago"],
+                pagamento: pedido["pagamento"],
+                recebidoPor: pedido["recebidoPor"]
+              }));
+            }
           });
         });
     }
 
     function confirmarEntrega(req) {
       const form = new FormData();
-      form.append("acao", "removerDaFila");
+      form.append("acao", "confirmarEntrega");
       form.append("req", req);
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
