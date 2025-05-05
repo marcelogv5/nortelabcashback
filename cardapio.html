@@ -142,42 +142,45 @@
       calcular();
     });
 
-    function enviarCardapio() {
-      if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
+function enviarCardapio() {
+  if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
-      let usado = 0;
-      let itensSelecionados = [];
-      for (let item in precos) {
-        const qtd = parseInt(form[item].value || "0");
-        if (qtd > 0) {
-          usado += qtd * precos[item];
-          itensSelecionados.push(`${item} (${qtd})`);
-        }
-      }
+  let usado = 0;
+  let itensSelecionados = [];
+  const dados = new FormData();
 
-      const excedente = Math.max(0, usado - credito);
-
-      const dados = new FormData();
-      dados.append("acao", "salvarNaFila");
-      dados.append("nome", nome);
-      dados.append("req", req);
-      dados.append("itens", itensSelecionados.join(", "));
-      dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
-      dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
-      dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
-      dados.append("pagamento", document.getElementById("pagamento").value || "");
-      dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
-
-      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-        method: "POST",
-        body: dados
-      }).then(() => {
-        alert("✅ Pedido enviado para a Fila!");
-        window.location.href = "index.html";
-      }).catch((error) => {
-        alert("❌ Erro ao enviar: " + error.message);
-      });
+  for (let item in precos) {
+    const qtd = parseInt(form[item].value || "0");
+    dados.append(item, qtd); // envia quantidade de cada item
+    if (qtd > 0) {
+      usado += qtd * precos[item];
+      itensSelecionados.push(`${item} (${qtd})`);
     }
+  }
+
+  const excedente = Math.max(0, usado - credito);
+
+  dados.append("acao", "salvarNaFila");
+  dados.append("nome", nome);
+  dados.append("req", req);
+  dados.append("itens", itensSelecionados.join(", "));
+  dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+  dados.append("pagamento", document.getElementById("pagamento").value || "");
+  dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+
+  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+    method: "POST",
+    body: dados
+  }).then(() => {
+    alert("✅ Pedido enviado para a Fila!");
+    window.location.href = "index.html";
+  }).catch((error) => {
+    alert("❌ Erro ao enviar: " + error.message);
+  });
+}
+
 
     form.addEventListener("input", calcular);
     calcular();
