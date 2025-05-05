@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Fila de Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fila de Pedidos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
       background: #f5f5f5;
       padding: 20px;
-      margin: 0;
       text-align: center;
     }
     .logo {
@@ -36,12 +36,9 @@
       cursor: pointer;
       width: 100%;
     }
-    button.refresh {
-      margin-bottom: 20px;
-    }
     @media (max-width: 600px) {
       .pedido {
-        padding: 12px;
+        padding: 10px;
         font-size: 15px;
       }
     }
@@ -50,7 +47,7 @@
 <body onload="carregarFila()">
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
-  <button class="refresh" onclick="location.reload()">🔄 Atualizar Página</button>
+  <button onclick="location.reload()">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
@@ -60,7 +57,7 @@
       const div = document.createElement("div");
       div.className = "pedido";
       div.innerHTML = `
-        <h3>${pedido["Nome"]}</h3>
+        <h3>${pedido["Data/Hora"]}</h3>
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
         <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
         <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
@@ -73,50 +70,45 @@
 
     function carregarFila() {
       const container = document.getElementById("filaContainer");
-      container.innerHTML = "";
+      container.innerHTML = "Carregando pedidos...";
 
       fetch(urlCsv)
-        .then(res => res.text())
-        .then(text => {
-          const linhas = text.trim().split("\n");
-          const cabecalhos = linhas[0].split(",").map(h => h.trim());
+        .then(response => response.text())
+        .then(csv => {
+          const resultado = Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true
+          });
 
-          for (let i = 1; i < linhas.length; i++) {
-            const valores = linhas[i].split(",").map(v => v.trim());
-            const pedido = {};
-            cabecalhos.forEach((coluna, idx) => {
-              pedido[coluna] = valores[idx] || "";
-            });
+          container.innerHTML = "";
 
-            if (pedido["Confirma_entrega"] !== "Sim") {
+          resultado.data.forEach(pedido => {
+            if (!pedido["Confirma_entrega"]) {
               container.appendChild(criarCard(pedido));
             }
-          }
-
-          if (container.innerHTML === "") {
-            container.innerText = "Nenhum pedido pendente.";
-          }
+          });
         })
         .catch(err => {
-          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
+          container.innerText = "Erro ao carregar pedidos: " + err.message;
         });
     }
 
-    function confirmarEntrega(req) {
+    function confirmarEntrega(requisicao) {
       const form = new FormData();
-      form.append("acao", "removerDaFila");
-      form.append("req", req);
+      form.append("acao", "confirmarEntrega");
+      form.append("req", requisicao);
 
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
         body: form
       })
-      .then(() => {
+      .then(response => response.text())
+      .then(resp => {
         alert("✅ Pedido atendido!");
         location.reload();
       })
-      .catch((err) => {
-        alert("❌ Erro ao confirmar entrega: " + err.message);
+      .catch(error => {
+        alert("Erro ao confirmar entrega: " + error.message);
       });
     }
   </script>
