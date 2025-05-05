@@ -120,20 +120,18 @@
 
     function calcular() {
       let total = 0;
-   const campos = ["Torrada", "Bolo", "Gelatina", "Iogurte", "Café sem açúcar", "Café com açúcar", "Chá do dia"];
-
-campos.forEach(item => {
-  const qtd = parseInt(form.elements.namedItem(item).value || "0");
-  dados.append(item, qtd);
-  if (qtd > 0) usado += qtd * precos[item];
-});
+      const campos = ["Torrada", "Bolo", "Gelatina", "Iogurte", "Café com açúcar", "Café sem açúcar", "Chá do dia"];
+      campos.forEach(item => {
+        const qtd = parseInt(form.elements.namedItem(item).value || "0");
+        total += qtd * precos[item];
+      });
 
       const saldo = credito - total;
       resumo.innerHTML = `
-  Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
-  Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
-  ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
-`;
+        Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
+        Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
+        ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
+      `;
 
       document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
       document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
@@ -146,43 +144,41 @@ campos.forEach(item => {
       calcular();
     });
 
-function enviarCardapio() {
-  if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
+    function enviarCardapio() {
+      if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
-  let usado = 0;
-  const dados = new FormData();
+      let usado = 0;
+      const dados = new FormData();
 
-  for (let item in precos) {
-    const qtd = parseInt(form[item].value || "0");
-    dados.append(item, qtd); // envia apenas o número
-    if (qtd > 0) {
-      usado += qtd * precos[item];
+      for (let item in precos) {
+        const qtd = parseInt(form[item].value || "0");
+        dados.append(item, qtd);
+        if (qtd > 0) {
+          usado += qtd * precos[item];
+        }
+      }
+
+      const excedente = Math.max(0, usado - credito);
+
+      dados.append("acao", "salvarNaFila");
+      dados.append("nome", nome);
+      dados.append("req", req);
+      dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+      dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+      dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+      dados.append("pagamento", document.getElementById("pagamento").value || "");
+      dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: dados
+      }).then(() => {
+        alert("✅ Pedido enviado para a Fila!");
+        window.location.href = "index.html";
+      }).catch((error) => {
+        alert("❌ Erro ao enviar: " + error.message);
+      });
     }
-  }
-
-  const excedente = Math.max(0, usado - credito);
-
-  dados.append("acao", "salvarNaFila");
-  dados.append("nome", nome);
-  dados.append("req", req);
-  // ❌ Removido: dados.append("itens", itensSelecionados.join(", "));
-  dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
-  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
-  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
-  dados.append("pagamento", document.getElementById("pagamento").value || "");
-  dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
-
-  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-    method: "POST",
-    body: dados
-  }).then(() => {
-    alert("✅ Pedido enviado para a Fila!");
-    window.location.href = "index.html";
-  }).catch((error) => {
-    alert("❌ Erro ao enviar: " + error.message);
-  });
-}
-
 
     form.addEventListener("input", calcular);
     calcular();
