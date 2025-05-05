@@ -125,7 +125,12 @@
         total += qtd * precos[item];
       }
       const saldo = credito - total;
-      resumo.innerHTML = `Total: R$ ${total.toFixed(2).replace('.', ',')}<br>Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}`;
+      resumo.innerHTML = `
+  Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
+  Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
+  ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
+`;
+
       document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
       document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
     }
