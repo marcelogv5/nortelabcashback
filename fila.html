@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fila de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
@@ -36,9 +36,13 @@
       cursor: pointer;
       width: 100%;
     }
+    button.refresh {
+      margin-bottom: 20px;
+    }
     @media (max-width: 600px) {
       .pedido {
-        font-size: 14px;
+        padding: 12px;
+        font-size: 15px;
       }
     }
   </style>
@@ -46,7 +50,7 @@
 <body onload="carregarFila()">
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
-  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <button class="refresh" onclick="location.reload()">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
@@ -76,20 +80,25 @@
         .then(text => {
           const linhas = text.trim().split("\n");
           const cabecalhos = linhas[0].split(",").map(h => h.trim());
+
           for (let i = 1; i < linhas.length; i++) {
-            const valores = linhas[i].split(",");
+            const valores = linhas[i].split(",").map(v => v.trim());
             const pedido = {};
             cabecalhos.forEach((coluna, idx) => {
-              pedido[coluna] = valores[idx]?.trim();
+              pedido[coluna] = valores[idx] || "";
             });
 
-            if (!pedido["Confirma_entrega"]) {
+            if (pedido["Confirma_entrega"] !== "Sim") {
               container.appendChild(criarCard(pedido));
             }
           }
+
+          if (container.innerHTML === "") {
+            container.innerText = "Nenhum pedido pendente.";
+          }
         })
         .catch(err => {
-          document.getElementById("filaContainer").innerText = "❌ Erro ao carregar pedidos: " + err.message;
+          document.getElementById("filaContainer").innerText = "Erro ao carregar pedidos: " + err.message;
         });
     }
 
@@ -101,10 +110,12 @@
       fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
         method: "POST",
         body: form
-      }).then(() => {
+      })
+      .then(() => {
         alert("✅ Pedido atendido!");
         location.reload();
-      }).catch(err => {
+      })
+      .catch((err) => {
         alert("❌ Erro ao confirmar entrega: " + err.message);
       });
     }
