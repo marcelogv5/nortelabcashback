@@ -147,13 +147,14 @@ function enviarCardapio() {
 
   let usado = 0;
   const dados = new FormData();
+  let itensSelecionados = []; // ← REINCLUIR ESTA LINHA
 
   for (let item in precos) {
     const qtd = parseInt(form[item].value || "0");
-    dados.append(item, qtd); // envia quantidade de cada item
+    dados.append(item, qtd);
     if (qtd > 0) {
       usado += qtd * precos[item];
-      // itensSelecionados.push(`${item} (${qtd})`); ← REMOVA ESTA LINHA
+      itensSelecionados.push(`${item} (${qtd})`);
     }
   }
 
