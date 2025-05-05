@@ -158,17 +158,18 @@ function enviarCardapio() {
     }
   }
 
-  const excedente = Math.max(0, usado - credito);
+ const excedente = Math.max(0, usado - credito);
 
-  dados.append("acao", "salvarNaFila");
-  dados.append("nome", nome);
-  dados.append("req", req);
-  dados.append("itens", ""); // ou apenas deixe vazio
-  dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
-  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
-  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
-  dados.append("pagamento", document.getElementById("pagamento").value || "");
-  dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+dados.append("acao", "salvarNaFila");
+dados.append("nome", nome);
+dados.append("req", req);
+// dados.append("itens", ""); ← REMOVA ESTA LINHA
+dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+dados.append("pagamento", document.getElementById("pagamento").value || "");
+dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+
 
   fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
     method: "POST",
