@@ -46,74 +46,79 @@
 <body onload="carregarFila()">
   <img src="assets/logo.png" alt="Logo Nortelab" class="logo">
   <h1>Fila de Pedidos</h1>
-  <button onclick="location.reload()">🔄 Atualizar Página</button>
+  <button onclick="carregarFila()">🔄 Atualizar Página</button>
   <div id="filaContainer">Carregando pedidos...</div>
 
   <script>
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfn-x90sgiBi23Zz_h2ZHXC_bCysGyeKheyuYwgfS4_-7i2rDYwELDvfKI8fEn4l5kCrm9sXvlGCwe/pub?gid=0&single=true&output=csv';
 
     function carregarFila() {
-      fetch(url)
+      const container = document.getElementById('filaContainer');
+      container.innerHTML = 'Carregando pedidos...'; // Reset visual
+
+      // Forçar atualização ignorando cache do Google
+      fetch(url + '&cachebust=' + new Date().getTime())
         .then(res => res.text())
         .then(csv => {
           const linhas = csv.trim().split('\n');
           const cabecalho = linhas[0].split(',');
           const pedidos = linhas.slice(1).map(l => l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
-          const container = document.getElementById('filaContainer');
           container.innerHTML = '';
 
+          let contador = 0;
           pedidos.forEach(p => {
             const pedido = {};
             cabecalho.forEach((c, i) => pedido[c.trim()] = p[i]?.replace(/\"/g, '').trim());
             if (pedido['Confirma_entrega'] !== 'Sim') {
               container.appendChild(criarCard(pedido));
+              contador++;
             }
           });
+
+          if (contador === 0) {
+            container.innerHTML = '<p>✅ Nenhum pedido pendente no momento.</p>';
+          }
         });
     }
 
     function criarCard(pedido) {
-  const div = document.createElement("div");
-  div.className = "pedido";
-  div.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3>${pedido["Nome"]}</h3>
-      <span>${pedido["Data/Hora"]}</span>
-    </div>
-    <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-    <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
-    <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
-    <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
-    <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
-    <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
-  `;
-  return div;
-}
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>${pedido["Nome"]}</h3>
+          <span>${pedido["Data/Hora"]}</span>
+        </div>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]}</p>
+        <p><strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+      `;
+      return div;
+    }
 
+    function confirmarEntrega(requisicao) {
+      const form = new FormData();
+      form.append("acao", "confirmarEntrega");
+      form.append("req", requisicao);
 
-  function confirmarEntrega(requisicao) {
-  const form = new FormData();
-  form.append("acao", "confirmarEntrega");
-  form.append("req", requisicao);
-
-  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-    method: "POST",
-    body: form
-  })
-  .then(resp => resp.text())
-  .then(resp => {
-    alert(resp);
-    // Remover o card do DOM após marcar como entregue
-    const button = document.querySelector(`button[onclick="confirmarEntrega('${requisicao}')"]`);
-    const card = button.closest(".pedido");
-    if (card) card.remove();
-  })
-  .catch(error => {
-    alert("Erro ao confirmar entrega: " + error.message);
-  });
-}
-
-
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      })
+      .then(resp => resp.text())
+      .then(resp => {
+        alert(resp);
+        const button = document.querySelector(`button[onclick="confirmarEntrega('${requisicao}')"]`);
+        const card = button.closest(".pedido");
+        if (card) card.remove();
+      })
+      .catch(error => {
+        alert("Erro ao confirmar entrega: " + error.message);
+      });
+    }
   </script>
 </body>
 </html>
