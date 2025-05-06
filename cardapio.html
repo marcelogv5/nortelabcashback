@@ -56,15 +56,20 @@
     <h2 id="boasVindas"></h2>
     <form id="cardapioForm">
       <h3>Menu:</h3>
-      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 8,00)</div>
+      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 4,00)</div>
+      <div class="item"><input type="number" name="Cream craker" value="0" min="0"> Cream Craker (R$ 0,50)</div>
 
       <h3>Bebidas:</h3>
-      <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 2,00)</div>
-      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 2,00)</div>
+      <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Chocolate quente" value="0" min="0"> Chocolate quente (R$ 1,50)</div>
 
       <div id="resumo" style="margin-top: 15px;"></div>
 
@@ -83,7 +88,7 @@
           <select id="recebidoPor">
             <option value="Jéssica">Jéssica</option>
             <option value="Marilene">Marilene</option>
-            <option value="Ysloane">Ysloane</option>
+            <option value="Matheus">Matheus</option>
           </select>
         </div>
       </div>
@@ -112,8 +117,18 @@
   const resumo = document.getElementById("resumo");
 
   const precos = {
-    "Torrada": 2, "Bolo": 2, "Gelatina": 2, "Iogurte": 8,
-    "Café com açúcar": 2, "Café sem açúcar": 2, "Chá do dia": 2
+    "Torrada": 0.5,
+    "Bolo": 0.5,
+    "Gelatina": 0.5,
+    "Iogurte": 4,
+    "Cream craker": 0.5,
+    "Café com açúcar": 0.5,
+    "Café sem açúcar": 0.5,
+    "Chá do dia": 0.5,
+    "Água Saborizada": 0.5,
+    "Café com leite (com açúcar)": 1,
+    "Café com leite (sem açúcar)": 1,
+    "Chocolate quente": 1.5
   };
 
   const campos = Object.keys(precos);
@@ -183,6 +198,5 @@
   form.addEventListener("input", calcular);
   calcular();
 </script>
-
 </body>
 </html>
