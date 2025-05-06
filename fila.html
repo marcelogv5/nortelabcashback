@@ -57,7 +57,7 @@
       container.innerHTML = 'Carregando pedidos...'; // Reset visual
 
       // Forçar atualização ignorando cache do Google
-      fetch(url + '&cachebust=' + new Date().getTime())
+     fetch(`${url}&t=${Date.now()}`, { cache: "no-store" })
         .then(res => res.text())
         .then(csv => {
           const linhas = csv.trim().split('\n');
