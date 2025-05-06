@@ -106,7 +106,7 @@
     const valorParam = params.get("valor");
     const credito = valorParam ? (parseFloat(valorParam.replace(",", ".")) < 160 ? 4 : 8) : 0;
 
-    document.getElementById("boasVindas").innerText = ${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.;
+    document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
     const form = document.getElementById("cardapioForm");
     const resumo = document.getElementById("resumo");
@@ -127,11 +127,11 @@
       });
 
       const saldo = credito - total;
-      resumo.innerHTML = 
+      resumo.innerHTML = `
         Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
         Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
-        ${saldo < 0 ? Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')} : ''}
-      ;
+        ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
+      `;
 
       document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
       document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
@@ -163,9 +163,9 @@
       dados.append("acao", "salvarNaFila");
       dados.append("nome", nome);
       dados.append("req", req);
-      dados.append("usado", R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')});
-      dados.append("sobra", R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')});
-      dados.append("valor_excedente_pago", R$ ${excedente.toFixed(2).replace('.', ',')});
+      dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+      dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+      dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
       dados.append("pagamento", document.getElementById("pagamento").value || "");
       dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
