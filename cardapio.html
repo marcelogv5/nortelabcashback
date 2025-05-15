@@ -56,20 +56,20 @@
     <h2 id="boasVindas"></h2>
     <form id="cardapioForm">
       <h3>Menu:</h3>
-      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 4,00)</div>
-      <div class="item"><input type="number" name="Cream craker" value="0" min="0"> Cream Craker (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 5,00)</div>
+      <div class="item"><input type="number" name="Cream craker" value="0" min="0"> Cream Craker (R$ 1,00)</div>
 
       <h3>Bebidas:</h3>
-      <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 0,50)</div>
+      <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 1,00)</div>
       <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 0,50)</div>
-      <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,00)</div>
-      <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,00)</div>
-      <div class="item"><input type="number" name="Chocolate quente" value="0" min="0"> Chocolate quente (R$ 1,50)</div>
+      <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,50)</div>
+      <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,50)</div>
+      <div class="item"><input type="number" name="Chocolate quente" value="0" min="0"> Chocolate quente (R$ 3,00)</div>
 
       <div id="resumo" style="margin-top: 15px;"></div>
 
@@ -109,7 +109,18 @@
   const nome = params.get("nome") || "";
   const req = params.get("req") || "";
   const valorParam = params.get("valor");
-  const credito = valorParam ? (parseFloat(valorParam.replace(",", ".")) < 160 ? 4 : 8) : 0;
+  let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
+let credito = 0;
+
+if (valor === 0) {
+  credito = 0;
+} else if (valor > 0 && valor <= 40) {
+  credito = 2;
+} else if (valor > 40 && valor <= 160) {
+  credito = valor * 0.05;
+} else if (valor > 160) {
+  credito = 8;
+}
 
   document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
@@ -117,18 +128,18 @@
   const resumo = document.getElementById("resumo");
 
   const precos = {
-    "Torrada": 0.5,
-    "Bolo": 0.5,
-    "Gelatina": 0.5,
-    "Iogurte": 4,
-    "Cream craker": 0.5,
-    "Café com açúcar": 0.5,
-    "Café sem açúcar": 0.5,
-    "Chá do dia": 0.5,
-    "Água Saborizada": 0.5,
-    "Café com leite (com açúcar)": 1,
-    "Café com leite (sem açúcar)": 1,
-    "Chocolate quente": 1.5
+    "Torrada": 1,
+    "Bolo": 1,
+    "Gelatina": 1,
+    "Iogurte": 5,
+    "Cream craker": 1,
+    "Café com açúcar": 1,
+    "Café sem açúcar": 1,
+    "Chá do dia": 1,
+    "Água Saborizada": 1,
+    "Café com leite (com açúcar)": 1.5,
+    "Café com leite (sem açúcar)": 1.5,
+    "Chocolate quente": 3
   };
 
   const campos = Object.keys(precos);
