@@ -65,7 +65,7 @@
       <h3>Bebidas:</h3>
       <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 1,00)</div>
-      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 1,50)</div>
       <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,50)</div>
       <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,50)</div>
@@ -105,21 +105,28 @@
   </div>
 
 <script>
+const params = new URLSearchParams(window.location.search);
+const nome = params.get("nome") || "";
+const req = params.get("req") || "";
 const valorParam = params.get("valor");
-let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
-var credito = 0; // <<< tornou-se global
+let credito = 0;
 
-if (valor === 0) {
-  credito = 0;
-} else if (valor > 0 && valor <= 40) {
-  credito = 2;
-} else if (valor > 40 && valor <= 160) {
-  credito = valor * 0.05;
-} else if (valor > 160) {
-  credito = 8;
+if (valorParam) {
+  const valor = parseFloat(valorParam.replace(",", "."));
+  if (valor === 0) {
+    credito = 0;
+  } else if (valor <= 40) {
+    credito = 2;
+  } else if (valor <= 160) {
+    credito = valor * 0.05;
+  } else {
+    credito = 8;
+  }
 }
 
-document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+document.getElementById("boasVindas").innerText =
+  `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+
 
   const form = document.getElementById("cardapioForm");
   const resumo = document.getElementById("resumo");
