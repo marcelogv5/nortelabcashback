@@ -68,10 +68,11 @@
           pedidos.forEach(p => {
             const pedido = {};
             cabecalho.forEach((c, i) => pedido[c.trim()] = p[i]?.replace(/\"/g, '').trim());
-            if (pedido['Confirma_entrega'] !== 'Sim') {
-              container.appendChild(criarCard(pedido));
-              contador++;
-            }
+          if (pedido['Confirma_entrega'] !== 'Sim' && pedido['Confirma_entrega'] !== 'Não') {
+  container.appendChild(criarCard(pedido));
+  contador++;
+}
+
           });
 
           if (contador === 0) {
