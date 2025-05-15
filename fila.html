@@ -81,23 +81,34 @@
     }
 
     function criarCard(pedido) {
-      const div = document.createElement("div");
-      div.className = "pedido";
-      div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3>${pedido["Nome"]}</h3>
-          <span>${pedido["Data/Hora"]}</span>
-        </div>
-        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-        <p><strong>Torrada:</strong> ${pedido["Torrada"]} | <strong>Bolo:</strong> ${pedido["Bolo"]} | <strong>Gelatina:</strong> ${pedido["Gelatina"]} | <strong>Iogurte:</strong> ${pedido["Iogurte"]} | <strong>Cream craker:</strong> ${pedido["Cream craker"]}</p>
-        <p><strong>Café sem açúcar:</strong> ${pedido["Café sem açúcar"]} | <strong>Café com açúcar:</strong> ${pedido["Café com açúcar"]} | <strong>Chá:</strong> ${pedido["Chá do dia"]} | <strong>Água Saborizada:</strong> ${pedido["Água Saborizada"]}</p>
-        <p><strong>Café com leite (com açúcar):</strong> ${pedido["Café com leite (com açúcar)"]} | <strong>Café com leite (sem açúcar):</strong> ${pedido["Café com leite (sem açúcar)"]} | <strong>Chocolate quente:</strong> ${pedido["Chocolate quente"]}</p>
-        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
-        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
-        <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
-      `;
-      return div;
-    }
+  const div = document.createElement("div");
+  div.className = "pedido";
+
+  function item(nome, valor) {
+    return valor && parseInt(valor) > 0 ? `<strong>${nome}:</strong> ${valor}` : '';
+  }
+
+  const linha1 = [item("Torrada", pedido["Torrada"]), item("Bolo", pedido["Bolo"]), item("Gelatina", pedido["Gelatina"]), item("Iogurte", pedido["Iogurte"]), item("Cream craker", pedido["Cream craker"])].filter(Boolean).join(" | ");
+  const linha2 = [item("Café sem açúcar", pedido["Café sem açúcar"]), item("Café com açúcar", pedido["Café com açúcar"]), item("Chá", pedido["Chá do dia"]), item("Água Saborizada", pedido["Água Saborizada"])].filter(Boolean).join(" | ");
+  const linha3 = [item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]), item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]), item("Chocolate quente", pedido["Chocolate quente"])].filter(Boolean).join(" | ");
+
+  div.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>${pedido["Nome"]}</h3>
+      <span>${pedido["Data/Hora"]}</span>
+    </div>
+    <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+    ${linha1 ? `<p>${linha1}</p>` : ''}
+    ${linha2 ? `<p>${linha2}</p>` : ''}
+    ${linha3 ? `<p>${linha3}</p>` : ''}
+    <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+    <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+    <button onclick="confirmarEntrega('${pedido["Requisição"]}')">✅ Pedido Atendido</button>
+  `;
+
+  return div;
+}
+
 
     function confirmarEntrega(requisicao) {
       const form = new FormData();
