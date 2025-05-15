@@ -105,11 +105,8 @@
   </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const nome = params.get("nome") || "";
-  const req = params.get("req") || "";
   const valorParam = params.get("valor");
-  let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
+let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
 let credito = 0;
 
 if (valor === 0) {
@@ -121,6 +118,7 @@ if (valor === 0) {
 } else if (valor > 160) {
   credito = 8;
 }
+
 
   document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
