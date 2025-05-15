@@ -105,7 +105,7 @@
   </div>
 
 <script>
-  const valorParam = params.get("valor");
+ const valorParam = params.get("valor");
 let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
 let credito = 0;
 
@@ -119,8 +119,7 @@ if (valor === 0) {
   credito = 8;
 }
 
-
-  document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
+document.getElementById("boasVindas").innerText = `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
   const form = document.getElementById("cardapioForm");
   const resumo = document.getElementById("resumo");
