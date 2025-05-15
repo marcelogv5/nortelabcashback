@@ -105,9 +105,9 @@
   </div>
 
 <script>
- const valorParam = params.get("valor");
+const valorParam = params.get("valor");
 let valor = valorParam ? parseFloat(valorParam.replace(",", ".")) : 0;
-let credito = 0;
+var credito = 0; // <<< tornou-se global
 
 if (valor === 0) {
   credito = 0;
