@@ -111,11 +111,11 @@
 }
 
 
-  function confirmarEntrega(requisicao, status) {
+function confirmarEntrega(requisicao, status) {
   const form = new FormData();
   form.append("acao", "confirmarEntrega");
   form.append("req", requisicao);
-  form.append("status", status); // novo campo
+  form.append("Confirma_entrega", status); // <-- nome correto da coluna na planilha
 
   fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
     method: "POST",
@@ -134,6 +134,7 @@
     alert("Erro ao registrar entrega: " + error.message);
   });
 }
+
 
 
   </script>
