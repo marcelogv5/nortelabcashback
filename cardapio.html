@@ -65,7 +65,7 @@
       <h3>Bebidas:</h3>
       <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 1,00)</div>
-      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 1,50)</div>
+      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 1,30)</div>
       <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,50)</div>
       <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,50)</div>
@@ -83,14 +83,15 @@
             <option value="Cartão Débito">Cartão Débito</option>
           </select>
         </div>
-        <div class="item">
-          <label>Recebido por</label>
-          <select id="recebidoPor">
-            <option value="Jéssica">Jéssica</option>
-            <option value="Marilene">Marilene</option>
-            <option value="Matheus">Matheus</option>
-          </select>
-        </div>
+      </div>
+
+      <div class="item">
+        <label>Recebido por</label>
+        <select id="recebidoPor">
+          <option value="Jéssica">Jéssica</option>
+          <option value="Marilene">Marilene</option>
+          <option value="Matheus">Matheus</option>
+        </select>
       </div>
 
       <div class="item">
@@ -127,91 +128,90 @@ if (valorParam) {
 document.getElementById("boasVindas").innerText =
   `${nome}, você tem R$ ${credito.toFixed(2).replace('.', ',')} de cortesia.`;
 
+const form = document.getElementById("cardapioForm");
+const resumo = document.getElementById("resumo");
 
-  const form = document.getElementById("cardapioForm");
-  const resumo = document.getElementById("resumo");
+const precos = {
+  "Torrada": 1,
+  "Bolo": 1,
+  "Gelatina": 1,
+  "Iogurte": 5,
+  "Cream craker": 1,
+  "Café com açúcar": 1,
+  "Café sem açúcar": 1,
+  "Chá do dia": 1,
+  "Água Saborizada": 1,
+  "Café com leite (com açúcar)": 1.5,
+  "Café com leite (sem açúcar)": 1.5,
+  "Chocolate quente": 3
+};
 
-  const precos = {
-    "Torrada": 1,
-    "Bolo": 1,
-    "Gelatina": 1,
-    "Iogurte": 5,
-    "Cream craker": 1,
-    "Café com açúcar": 1,
-    "Café sem açúcar": 1,
-    "Chá do dia": 1,
-    "Água Saborizada": 1,
-    "Café com leite (com açúcar)": 1.5,
-    "Café com leite (sem açúcar)": 1.5,
-    "Chocolate quente": 3
-  };
+const campos = Object.keys(precos);
+let isPagoConfirmado = false;
 
-  const campos = Object.keys(precos);
-  let isPagoConfirmado = false;
-
-  function calcular() {
-    let total = 0;
-    campos.forEach(item => {
-      const input = form.elements.namedItem(item);
-      const qtd = parseInt(input?.value || "0");
-      total += qtd * precos[item];
-    });
-
-    const saldo = credito - total;
-    resumo.innerHTML = `
-      Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
-      Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
-      ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
-    `;
-
-    document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
-    document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
-  }
-
-  document.getElementById("paymentToggle").addEventListener("click", function () {
-    isPagoConfirmado = !isPagoConfirmado;
-    document.getElementById("toggleSwitch").style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
-    document.getElementById("toggleSwitch").style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
-    calcular();
+function calcular() {
+  let total = 0;
+  campos.forEach(item => {
+    const input = form.elements.namedItem(item);
+    const qtd = parseInt(input?.value || "0");
+    total += qtd * precos[item];
   });
 
-  function enviarCardapio() {
-    if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
+  const saldo = credito - total;
+  resumo.innerHTML = `
+    Total: R$ ${total.toFixed(2).replace('.', ',')}<br>
+    Saldo restante: R$ ${Math.max(0, saldo).toFixed(2).replace('.', ',')}<br>
+    ${saldo < 0 ? `Valor a pagar: R$ ${(Math.abs(saldo)).toFixed(2).replace('.', ',')}` : ''}
+  `;
 
-    let usado = 0;
-    const dados = new FormData();
+  document.getElementById("opcoesPagamento").style.display = saldo < 0 ? "block" : "none";
+  document.getElementById("finalizarButton").disabled = saldo < 0 && !isPagoConfirmado;
+}
 
-    campos.forEach(item => {
-      const input = form.elements.namedItem(item);
-      const qtd = parseInt(input?.value || "0");
-      dados.append(item, qtd);
-      if (qtd > 0) usado += qtd * precos[item];
-    });
-
-    const excedente = Math.max(0, usado - credito);
-
-    dados.append("acao", "salvarNaFila");
-    dados.append("nome", nome);
-    dados.append("req", req);
-    dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
-    dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
-    dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
-    dados.append("pagamento", document.getElementById("pagamento").value || "");
-    dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
-
-    fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-      method: "POST",
-      body: dados
-    }).then(() => {
-      alert("✅ Pedido enviado para a Fila!");
-      window.location.href = "index.html";
-    }).catch((error) => {
-      alert("❌ Erro ao enviar: " + error.message);
-    });
-  }
-
-  form.addEventListener("input", calcular);
+document.getElementById("paymentToggle").addEventListener("click", function () {
+  isPagoConfirmado = !isPagoConfirmado;
+  document.getElementById("toggleSwitch").style.transform = isPagoConfirmado ? "translateX(20px)" : "translateX(0)";
+  document.getElementById("toggleSwitch").style.backgroundColor = isPagoConfirmado ? "#66bb6a" : "#ccc";
   calcular();
+});
+
+function enviarCardapio() {
+  if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
+
+  let usado = 0;
+  const dados = new FormData();
+
+  campos.forEach(item => {
+    const input = form.elements.namedItem(item);
+    const qtd = parseInt(input?.value || "0");
+    dados.append(item, qtd);
+    if (qtd > 0) usado += qtd * precos[item];
+  });
+
+  const excedente = Math.max(0, usado - credito);
+
+  dados.append("acao", "salvarNaFila");
+  dados.append("nome", nome);
+  dados.append("req", req);
+  dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+  dados.append("pagamento", document.getElementById("pagamento").value || "");
+  dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+
+  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+    method: "POST",
+    body: dados
+  }).then(() => {
+    alert("✅ Pedido enviado para a Fila!");
+    window.location.href = "index.html";
+  }).catch((error) => {
+    alert("❌ Erro ao enviar: " + error.message);
+  });
+}
+
+form.addEventListener("input", calcular);
+calcular();
 </script>
 </body>
 </html>
