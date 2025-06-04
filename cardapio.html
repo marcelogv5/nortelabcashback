@@ -178,6 +178,14 @@ document.getElementById("paymentToggle").addEventListener("click", function () {
 function enviarCardapio() {
   if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
+  // 🛑 Desativa botão e mostra status
+  document.getElementById("finalizarButton").disabled = true;
+  const statusDiv = document.createElement("div");
+  statusDiv.style.marginTop = "10px";
+  statusDiv.style.color = "green";
+  statusDiv.innerText = "⏳ Enviando...";
+  form.appendChild(statusDiv);
+
   let usado = 0;
   const dados = new FormData();
 
@@ -203,7 +211,7 @@ function enviarCardapio() {
     method: "POST",
     body: dados
   }).then(() => {
-    alert("✅ Pedido enviado para a Fila!");
+    statusDiv.innerText = "✅ Pedido enviado!";
     window.location.href = "index.html";
   }).catch((error) => {
     alert("❌ Erro ao enviar: " + error.message);
