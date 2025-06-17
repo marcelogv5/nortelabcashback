@@ -82,7 +82,7 @@
 
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3>${pedido["Nome"]}</h3>
+          <h3>${pedido["Nome"] || "Nome não informado"}</h3>
           <span>${pedido["Data/Hora"]}</span>
         </div>
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
