@@ -89,9 +89,9 @@
     return valor && parseInt(valor) > 0 ? `<strong>${nome}:</strong> ${valor}` : '';
   }
 
-  const linha1 = [item("Torrada", pedido["Torrada"]), item("Bolo", pedido["Bolo"]), item("Gelatina", pedido["Gelatina"]), item("Iogurte", pedido["Iogurte"]), item("Cream craker", pedido["Cream craker"])].filter(Boolean).join(" | ");
-  const linha2 = [item("Café sem açúcar", pedido["Café sem açúcar"]), item("Café com açúcar", pedido["Café com açúcar"]), item("Chá", pedido["Chá do dia"]), item("Água Saborizada", pedido["Água Saborizada"])].filter(Boolean).join(" | ");
-  const linha3 = [item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]), item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]), item("Chocolate quente", pedido["Chocolate quente"])].filter(Boolean).join(" | ");
+  const linha1 = [item("Biscoito de Peta", pedido["Biscoito de Peta"]), item("Bolo", pedido["Bolo"]), item("Gelatina", pedido["Gelatina"]), item("Iogurte", pedido["Iogurte"]), item("Cream craker", pedido["Cream craker"]), item("Canjica", pedido["Canjica"])].filter(Boolean).join(" | ");
+  const linha2 = [item("Café sem açúcar", pedido["Café sem açúcar"]), item("Café com açúcar", pedido["Café com açúcar"]), item("Quentão", pedido["Quentão"]), item("Água Saborizada", pedido["Água Saborizada"])].filter(Boolean).join(" | ");
+  const linha3 = [item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]), item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]), item("Chocolate quente", pedido["Chocolate quente"]),].filter(Boolean).join(" | ");
 
   div.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center;">
