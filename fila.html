@@ -68,11 +68,10 @@
           pedidos.forEach(p => {
             const pedido = {};
             cabecalho.forEach((c, i) => pedido[c.trim()] = p[i]?.replace(/\"/g, '').trim());
-          if (pedido['Confirma_entrega'] !== 'Sim' && pedido['Confirma_entrega'] !== 'Não') {
-  container.appendChild(criarCard(pedido));
-  contador++;
-}
-
+            if (pedido['Confirma_entrega'] !== 'Sim' && pedido['Confirma_entrega'] !== 'Não') {
+              container.appendChild(criarCard(pedido));
+              contador++;
+            }
           });
 
           if (contador === 0) {
@@ -81,63 +80,77 @@
         });
     }
 
- function criarCard(pedido) {
-  const div = document.createElement("div");
-  div.className = "pedido";
+    function criarCard(pedido) {
+      const div = document.createElement("div");
+      div.className = "pedido";
 
-  function item(nome, valor) {
-    return valor && parseInt(valor) > 0 ? `<strong>${nome}:</strong> ${valor}` : '';
-  }
+      function item(nome, valor) {
+        return valor && parseInt(valor) > 0 ? `<strong>${nome}:</strong> ${valor}` : '';
+      }
 
-  const linha1 = [item("Biscoito de Peta", pedido["Biscoito de Peta"]), item("Bolo", pedido["Bolo"]), item("Gelatina", pedido["Gelatina"]), item("Iogurte", pedido["Iogurte"]), item("Cream craker", pedido["Cream craker"]), item("Canjica", pedido["Canjica"])].filter(Boolean).join(" | ");
-  const linha2 = [item("Café sem açúcar", pedido["Café sem açúcar"]), item("Café com açúcar", pedido["Café com açúcar"]), item("Quentão", pedido["Quentão"]), item("Água Saborizada", pedido["Água Saborizada"])].filter(Boolean).join(" | ");
-  const linha3 = [item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]), item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]), item("Chocolate quente", pedido["Chocolate quente"]),].filter(Boolean).join(" | ");
+      const linha1 = [
+        item("Biscoito de Peta", pedido["Biscoito de Peta"]),
+        item("Bolo", pedido["Bolo"]),
+        item("Gelatina", pedido["Gelatina"]),
+        item("Iogurte", pedido["Iogurte"]),
+        item("Cream craker", pedido["Cream craker"]),
+        item("Canjica", pedido["Canjica"])
+      ].filter(Boolean).join(" | ");
 
-  div.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3>${pedido["Nome"]}</h3>
-      <span>${pedido["Data/Hora"]}</span>
-    </div>
-    <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-    ${linha1 ? `<p>${linha1}</p>` : ''}
-    ${linha2 ? `<p>${linha2}</p>` : ''}
-    ${linha3 ? `<p>${linha3}</p>` : ''}
-    <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
-    <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
-    <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
-    <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
-  `;
+      const linha2 = [
+        item("Café sem açúcar", pedido["Café sem açúcar"]),
+        item("Café com açúcar", pedido["Café com açúcar"]),
+        item("Quentão", pedido["Quentão"]),
+        item("Água Saborizada", pedido["Água Saborizada"])
+      ].filter(Boolean).join(" | ");
 
-  return div;
-}
+      const linha3 = [
+        item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]),
+        item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]),
+        item("Chocolate quente", pedido["Chocolate quente"])
+      ].filter(Boolean).join(" | ");
 
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>${pedido["Nome"]}</h3>
+          <span>${pedido["Data/Hora"]}</span>
+        </div>
+        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+        ${linha1 ? `<p>${linha1}</p>` : ''}
+        ${linha2 ? `<p>${linha2}</p>` : ''}
+        ${linha3 ? `<p>${linha3}</p>` : ''}
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["sobra"]} | <strong>Excedente:</strong> ${pedido["valor_excedente_pago"]}</p>
+        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+        <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
+        <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
+      `;
 
-function confirmarEntrega(requisicao, status) {
-  const form = new FormData();
-  form.append("acao", "confirmarEntrega");
-  form.append("req", requisicao);
-  form.append("Confirma_entrega", status); // <-- nome correto da coluna na planilha
+      return div;
+    }
 
-  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
-    method: "POST",
-    body: form
-  })
-  .then(resp => resp.text())
-  .then(resp => {
-    alert(status === "Sim" ? "Entrega confirmada!" : "Entrega recusada!");
-    const buttons = document.querySelectorAll(`button[onclick*="confirmarEntrega('${requisicao}'"]`);
-    buttons.forEach(btn => {
-      const card = btn.closest(".pedido");
-      if (card) card.remove();
-    });
-  })
-  .catch(error => {
-    alert("Erro ao registrar entrega: " + error.message);
-  });
-}
+    function confirmarEntrega(requisicao, status) {
+      const form = new FormData();
+      form.append("acao", "confirmarEntrega");
+      form.append("req", requisicao);
+      form.append("Confirma_entrega", status);
 
-
-
+      fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+        method: "POST",
+        body: form
+      })
+      .then(resp => resp.text())
+      .then(resp => {
+        alert(status === "Sim" ? "Entrega confirmada!" : "Entrega recusada!");
+        const buttons = document.querySelectorAll(`button[onclick*="confirmarEntrega('${requisicao}'"]`);
+        buttons.forEach(btn => {
+          const card = btn.closest(".pedido");
+          if (card) card.remove();
+        });
+      })
+      .catch(error => {
+        alert("Erro ao registrar entrega: " + error.message);
+      });
+    }
   </script>
 </body>
 </html>
