@@ -56,7 +56,7 @@
     <h2 id="boasVindas"></h2>
     <form id="cardapioForm">
       <h3>Menu:</h3>
-      <div class="item"><input type="number" name="Biscoito de Peta" value="0" min="0"> Biscoito de Peta (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Torrada" value="0" min="0"> Torrada (R$ 1,00)</div>
       <div class="item"><input type="number" name="Bolo" value="0" min="0"> Bolo (R$ 1,00)</div>
       <div class="item"><input type="number" name="Gelatina" value="0" min="0"> Gelatina (R$ 1,00)</div>
       <div class="item"><input type="number" name="Iogurte" value="0" min="0"> Iogurte (R$ 5,00)</div>
@@ -65,13 +65,12 @@
       <h3>Bebidas:</h3>
       <div class="item"><input type="number" name="Café com açúcar" value="0" min="0"> Café com açúcar (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café sem açúcar" value="0" min="0"> Café sem açúcar (R$ 1,00)</div>
-      <div class="item"><input type="number" name="Quentão" value="0" min="0"> Quentão (R$ 1,00)</div>
+      <div class="item"><input type="number" name="Chá do dia" value="0" min="0"> Chá do dia (R$ 1,00)</div>
       <div class="item"><input type="number" name="Água Saborizada" value="0" min="0"> Água Saborizada (R$ 1,00)</div>
       <div class="item"><input type="number" name="Café com leite (com açúcar)" value="0" min="0"> Café com leite (com açúcar) (R$ 1,50)</div>
       <div class="item"><input type="number" name="Café com leite (sem açúcar)" value="0" min="0"> Café com leite (sem açúcar) (R$ 1,50)</div>
       <div class="item"><input type="number" name="Chocolate quente" value="0" min="0"> Chocolate quente (R$ 3,00)</div>
-      <div class="item"><input type="number" name="Canjica" value="0" min="0"> Canjica (R$ 3,00)</div>
-      
+
       <div id="resumo" style="margin-top: 15px;"></div>
 
       <div id="opcoesPagamento" style="display:none;">
@@ -133,19 +132,18 @@ const form = document.getElementById("cardapioForm");
 const resumo = document.getElementById("resumo");
 
 const precos = {
-  "Biscoito de Peta": 1,
+  "Torrada": 1,
   "Bolo": 1,
   "Gelatina": 1,
   "Iogurte": 5,
   "Cream craker": 1,
   "Café com açúcar": 1,
   "Café sem açúcar": 1,
-  "Quentão": 1,
+  "Chá do dia": 1,
   "Água Saborizada": 1,
   "Café com leite (com açúcar)": 1.5,
   "Café com leite (sem açúcar)": 1.5,
-  "Chocolate quente": 3,
-  "Canjica": 3
+  "Chocolate quente": 3
 };
 
 const campos = Object.keys(precos);
@@ -180,19 +178,8 @@ document.getElementById("paymentToggle").addEventListener("click", function () {
 function enviarCardapio() {
   if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
-  document.getElementById("finalizarButton").disabled = true;
-  const statusDiv = document.createElement("div");
-  statusDiv.style.marginTop = "10px";
-  statusDiv.style.color = "green";
-  statusDiv.innerText = "⏳ Enviando...";
-  form.appendChild(statusDiv);
-
   let usado = 0;
   const dados = new FormData();
-
-  dados.append("Data/Hora", new Date().toLocaleString("pt-BR"));
-  dados.append("Nome", nome);
-  dados.append("Requisição", req);
 
   campos.forEach(item => {
     const input = form.elements.namedItem(item);
@@ -202,19 +189,21 @@ function enviarCardapio() {
   });
 
   const excedente = Math.max(0, usado - credito);
+
+  dados.append("acao", "salvarNaFila");
+  dados.append("nome", nome);
+  dados.append("req", req);
   dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
   dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
   dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
   dados.append("pagamento", document.getElementById("pagamento").value || "");
   dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
-  dados.append("Confirma_entrega", "");
-  dados.append("acao", "salvarNaFila");
 
   fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
     method: "POST",
     body: dados
   }).then(() => {
-    statusDiv.innerText = "✅ Pedido enviado!";
+    alert("✅ Pedido enviado para a Fila!");
     window.location.href = "index.html";
   }).catch((error) => {
     alert("❌ Erro ao enviar: " + error.message);
