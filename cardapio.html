@@ -1,4 +1,4 @@
-<!DOCTYPE html>More actions
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -178,7 +178,6 @@ document.getElementById("paymentToggle").addEventListener("click", function () {
 function enviarCardapio() {
   if (!isPagoConfirmado) return alert("Favor confirmar o recebimento.");
 
-  // 🛑 Desativa botão e mostra status
   document.getElementById("finalizarButton").disabled = true;
   const statusDiv = document.createElement("div");
   statusDiv.style.marginTop = "10px";
@@ -189,12 +188,30 @@ function enviarCardapio() {
   let usado = 0;
   const dados = new FormData();
 
-@@ -203,15 +211,15 @@
+  campos.forEach(item => {
+    const input = form.elements.namedItem(item);
+    const qtd = parseInt(input?.value || "0");
+    dados.append(item, qtd);
+    if (qtd > 0) usado += qtd * precos[item];
+  });
+
+  const excedente = Math.max(0, usado - credito);
+
+  dados.append("acao", "salvarNaFila");
+  dados.append("nome", nome);
+  dados.append("req", req);
+  dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
+  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+  dados.append("pagamento", document.getElementById("pagamento").value || "");
+  dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
+
+  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
     method: "POST",
     body: dados
   }).then(() => {
-    alert("✅ Pedido enviado para a Fila!");
     statusDiv.innerText = "✅ Pedido enviado!";
+    alert("✅ Pedido enviado para a Fila!");
     window.location.href = "index.html";
   }).catch((error) => {
     alert("❌ Erro ao enviar: " + error.message);
