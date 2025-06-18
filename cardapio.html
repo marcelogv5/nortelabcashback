@@ -200,12 +200,14 @@ function enviarCardapio() {
   dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
   fetch("https://script.google.com/macros/s/AKfycbwQC8RnvsEvSmhmyjO6W7dHSc47n_JjkYUoXGhLGiWsRUVY8i6rUywwkjX0Ij1I_5i_/exec", {
-
+    method: "POST",   // ✅ Adicionado
     body: dados
-  }).then(() => {
+  })
+  .then(() => {
     alert("✅ Pedido enviado para a Fila!");
     window.location.href = "index.html";
-  }).catch((error) => {
+  })
+  .catch((error) => {
     alert("❌ Erro ao enviar: " + error.message);
   });
 }
