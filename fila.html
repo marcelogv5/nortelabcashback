@@ -69,7 +69,7 @@
             const pedido = {};
             cabecalho.forEach((c, i) => pedido[c.trim()] = p[i]?.replace(/\"/g, '').trim());
             if (pedido['Confirma_entrega'] !== 'Sim' && pedido['Confirma_entrega'] !== 'Não') {
-              container.appendChild(criarCard(pedido));
+              container.appendChild(criarCard(pedido, cabecalho));
               contador++;
             }
           });
@@ -80,35 +80,16 @@
         });
     }
 
-    function criarCard(pedido) {
+    function criarCard(pedido, cabecalho) {
       const div = document.createElement("div");
       div.className = "pedido";
 
-      function item(nome, valor) {
-        return valor && parseInt(valor) > 0 ? `<strong>${nome}:</strong> ${valor}` : '';
-      }
+      const camposIgnorar = ["Nome", "Data/Hora", "Requisição", "usado", "Sobra", "Valor_excedente_pago", "pagamento", "recebidoPor", "Confirma_entrega"];
 
-      const linha1 = [
-        item("Biscoito de Peta", pedido["Biscoito de Peta"]),
-        item("Bolo", pedido["Bolo"]),
-        item("Gelatina", pedido["Gelatina"]),
-        item("Iogurte", pedido["Iogurte"]),
-        item("Cream craker", pedido["Cream craker"]),
-        item("Canjica", pedido["Canjica"])
-      ].filter(Boolean).join(" | ");
-
-      const linha2 = [
-        item("Café sem açúcar", pedido["Café sem açúcar"]),
-        item("Café com açúcar", pedido["Café com açúcar"]),
-        item("Quentão", pedido["Quentão"]),
-        item("Água Saborizada", pedido["Água Saborizada"])
-      ].filter(Boolean).join(" | ");
-
-      const linha3 = [
-        item("Café com leite (com açúcar)", pedido["Café com leite (com açúcar)"]),
-        item("Café com leite (sem açúcar)", pedido["Café com leite (sem açúcar)"]),
-        item("Chocolate quente", pedido["Chocolate quente"])
-      ].filter(Boolean).join(" | ");
+      const itens = cabecalho.filter(campo => !camposIgnorar.includes(campo.trim())).map(campo => {
+        const valor = pedido[campo.trim()];
+        return valor && parseInt(valor) > 0 ? `<strong>${campo.trim()}:</strong> ${valor}` : '';
+      }).filter(Boolean).join(" | ");
 
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -116,9 +97,7 @@
           <span>${pedido["Data/Hora"]}</span>
         </div>
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-        ${linha1 ? `<p>${linha1}</p>` : ''}
-        ${linha2 ? `<p>${linha2}</p>` : ''}
-        ${linha3 ? `<p>${linha3}</p>` : ''}
+        ${itens ? `<p>${itens}</p>` : ''}
         <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
         <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
         <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
