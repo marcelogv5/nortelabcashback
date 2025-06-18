@@ -68,8 +68,6 @@
           pedidos.forEach(p => {
             const pedido = {};
             cabecalho.forEach((c, i) => pedido[c.trim()] = p[i]?.replace(/\"/g, '').trim());
-
-            // Só exibe os que ainda não têm Sim ou Não
             if (pedido['Confirma_entrega'] !== 'Sim' && pedido['Confirma_entrega'] !== 'Não') {
               container.appendChild(criarCard(pedido));
               contador++;
@@ -120,13 +118,12 @@
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
         ${linha1 ? `<p>${linha1}</p>` : ''}
         ${linha2 ? `<p>${linha2}</p>` : ''}
-        ${linha3 ? `<p>${linha3}</p>` : ''}
-        <p><strong>Valor usado:</strong> ${pedido["Usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        ${linha3 ? `<p>${linha3}</p>` : ''
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
         <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
         <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
         <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
       `;
-
       return div;
     }
 
@@ -143,11 +140,7 @@
       .then(resp => resp.text())
       .then(resp => {
         alert(status === "Sim" ? "Entrega confirmada!" : "Entrega recusada!");
-        const buttons = document.querySelectorAll(`button[onclick*="confirmarEntrega('${requisicao}'"]`);
-        buttons.forEach(btn => {
-          const card = btn.closest(".pedido");
-          if (card) card.remove();
-        });
+        setTimeout(() => carregarFila(), 3000);  // Espera 3 segundos para dar tempo do CSV atualizar
       })
       .catch(error => {
         alert("Erro ao registrar entrega: " + error.message);
