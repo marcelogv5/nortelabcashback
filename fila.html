@@ -80,32 +80,37 @@
         });
     }
 
-    function criarCard(pedido, cabecalho) {
-      const div = document.createElement("div");
-      div.className = "pedido";
+    function criarCard(pedido) {
+  const div = document.createElement("div");
+  div.className = "pedido";
 
-      const camposIgnorar = ["Nome", "Data/Hora", "Requisição", "usado", "Sobra", "Valor_excedente_pago", "pagamento", "recebidoPor", "Confirma_entrega"];
+  const camposIgnorar = ["Data/Hora", "Nome", "Requisição", "usado", "sobra", "expira", "pagamento", "recebidoPor", "valor_excedente_pago", "Confirma_entrega"];
 
-      const itens = cabecalho.filter(campo => !camposIgnorar.includes(campo.trim())).map(campo => {
-        const valor = pedido[campo.trim()];
-        return valor && parseInt(valor) > 0 ? `<strong>${campo.trim()}:</strong> ${valor}` : '';
-      }).filter(Boolean).join(" | ");
+  const listaItens = Object.keys(pedido)
+    .filter(campo => !camposIgnorar.includes(campo))
+    .map(campo => {
+      const valor = pedido[campo];
+      return valor && parseInt(valor) > 0 ? `<strong>${campo}:</strong> ${valor}` : '';
+    })
+    .filter(Boolean)
+    .join(" | ");
 
-      div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3>${pedido["Nome"]}</h3>
-          <span>${pedido["Data/Hora"]}</span>
-        </div>
-        <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
-        ${itens ? `<p>${itens}</p>` : ''}
-        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
-        <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
-        <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
-        <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
-      `;
+  div.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>${pedido["Nome"]}</h3>
+      <span>${pedido["Data/Hora"]}</span>
+    </div>
+    <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
+    ${listaItens ? `<p>${listaItens}</p>` : ''}
+    <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["sobra"]} | <strong>Excedente:</strong> ${pedido["valor_excedente_pago"]}</p>
+    <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
+    <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
+    <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
+  `;
 
-      return div;
-    }
+  return div;
+}
+
 
     function confirmarEntrega(requisicao, status) {
       const form = new FormData();
