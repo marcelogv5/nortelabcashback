@@ -119,7 +119,7 @@
         ${linha1 ? `<p>${linha1}</p>` : ''}
         ${linha2 ? `<p>${linha2}</p>` : ''}
         ${linha3 ? `<p>${linha3}</p>` : ''}
-        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
+        <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["sobra"]} | <strong>Excedente:</strong> ${pedido["valor_excedente_pago"]}</p>
         <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
         <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
         <button style="background:#c62828; margin-top:8px;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Não')">❌ Pedido Recusado</button>
