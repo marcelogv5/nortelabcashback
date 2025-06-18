@@ -208,7 +208,7 @@ function enviarCardapio() {
   dados.append("pagamento", document.getElementById("pagamento").value || "");
   dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
-  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbzsRCc9x0-_Iy-jB3X8tsqO2vDc06X-WJXxb01U5Pg122zwfevZ-gf3Ys3BSvWU364V/exec", {
     method: "POST",
     body: dados
   }).then(() => {
