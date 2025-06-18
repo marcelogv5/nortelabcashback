@@ -118,7 +118,8 @@ function confirmarEntrega(requisicao, status) {
   form.append("req", requisicao);
   form.append("Confirma_entrega", status); // <-- nome correto da coluna na planilha
 
-  fetch("https://script.google.com/macros/s/AKfycbyz4viGPQQpqGF4bj69R31yp0KLYOpOpa5fIZ0OgoDeWfwtli9Jd7ALfc5dP8jMKhKW/exec", {
+ fetch("https://script.google.com/macros/s/AKfycbwQC8RnvsEvSmhmyjO6W7dHSc47n_JjkYUoXGhLGiWsRUVY8i6rUywwkjX0Ij1I_5i_/exec", {
+
     method: "POST",
     body: form
   })
