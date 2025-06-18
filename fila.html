@@ -118,7 +118,7 @@
         <p><strong>Requisição:</strong> ${pedido["Requisição"]}</p>
         ${linha1 ? `<p>${linha1}</p>` : ''}
         ${linha2 ? `<p>${linha2}</p>` : ''}
-        ${linha3 ? `<p>${linha3}</p>` : ''
+        ${linha3 ? `<p>${linha3}</p>` : ''}
         <p><strong>Valor usado:</strong> ${pedido["usado"]} | <strong>Sobra:</strong> ${pedido["Sobra"]} | <strong>Excedente:</strong> ${pedido["Valor_excedente_pago"]}</p>
         <p><strong>Pagamento:</strong> ${pedido["pagamento"]} | <strong>Recebido por:</strong> ${pedido["recebidoPor"]}</p>
         <button style="background:#2e7d32;" onclick="confirmarEntrega('${pedido["Requisição"]}', 'Sim')">✅ Pedido Atendido</button>
@@ -140,7 +140,7 @@
       .then(resp => resp.text())
       .then(resp => {
         alert(status === "Sim" ? "Entrega confirmada!" : "Entrega recusada!");
-        setTimeout(() => carregarFila(), 3000);  // Espera 3 segundos para dar tempo do CSV atualizar
+        setTimeout(() => carregarFila(), 3000);
       })
       .catch(error => {
         alert("Erro ao registrar entrega: " + error.message);
