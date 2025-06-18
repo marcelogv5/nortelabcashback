@@ -208,7 +208,7 @@ function enviarCardapio() {
   dados.append("pagamento", document.getElementById("pagamento").value || "");
   dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
-  fetch("https://script.google.com/macros/s/AKfycbzsRCc9x0-_Iy-jB3X8tsqO2vDc06X-WJXxb01U5Pg122zwfevZ-gf3Ys3BSvWU364V/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbzM8rZQbfmmoircdfQk50Q3RNlgeNHQVkzmrr5dJEBV6gldzUbwi1bqFfIKvGBK6Bwl/exec", {
     method: "POST",
     body: dados
   }).then(() => {
@@ -223,5 +223,6 @@ function enviarCardapio() {
 form.addEventListener("input", calcular);
 calcular();
 </script>
+
 </body>
 </html>
