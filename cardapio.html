@@ -198,8 +198,8 @@ function enviarCardapio() {
   dados.append("nome", nome);
   dados.append("req", req);
   dados.append("usado", `R$ ${Math.min(usado, credito).toFixed(2).replace('.', ',')}`);
-  dados.append("sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
-  dados.append("valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
+  dados.append("Sobra", `R$ ${Math.max(0, credito - usado).toFixed(2).replace('.', ',')}`);
+  dados.append("Valor_excedente_pago", `R$ ${excedente.toFixed(2).replace('.', ',')}`);
   dados.append("pagamento", document.getElementById("pagamento").value || "");
   dados.append("recebidoPor", document.getElementById("recebidoPor").value || "");
 
